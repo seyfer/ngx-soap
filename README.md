@@ -56,11 +56,19 @@ Please be aware, this package version number will be equal to the corresponding 
     }
     ```
 
-## Build and publish the lib
+## Build and publish the lib (for maintainers)
+
+Switch branch to a branch named after Angular version, f.e. 0.16.0 for all v16 updates.
+If branch doesn't exist - create it. Apply code changes in that branch.
+Then do:
 
 1. `npm run test:lib`
 2. `npm run build:lib`
 3. Confirm `npm run publish:dry-run`
+4. Publish `npm run publish`
+
+Do not forget to bump the package version before the release. 
+F.e., if this is another v16 change, bump minor version to 0.16.(X+1).
 
 ## Local example development 
 

@@ -1,6 +1,6 @@
 {
   "name": "ngx-soap-next",
-  "version": "0.16.2",
+  "version": "0.16.3",
   "description": "SOAP service for Angular",
   "homepage": "https://github.com/seyfer/ngx-soap",
   "author": "Luca Lulani, marcward, Oleg Abrazhaev",

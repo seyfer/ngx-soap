@@ -1,6 +1,6 @@
 {
   "name": "ngx-soap-next",
-  "version": "0.16.2",
+  "version": "0.16.3",
   "description": "SOAP service for Angular",
   "main": "src/index.js",
   "module": "src/index.js",
