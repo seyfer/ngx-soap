@@ -5,7 +5,7 @@ Simple SOAP client for Angular based on amazing [node-soap](https://github.com/v
 Project has been recreated from scratch with Angular CLI.
 
 Please be aware, this package version number will be equal to the corresponding Angular version
-0.10.x = v10, 0.11.x = v11, ... 0.16.x = v16
+0.10.x = v10, 0.11.x = v11, ... 0.16.x = v16, 0.17.x = v17
 
 ## npm
 
@@ -58,27 +58,72 @@ Please be aware, this package version number will be equal to the corresponding 
 
 ## Build and publish the lib (for maintainers)
 
-Switch branch to a branch named after Angular version, f.e. 0.16.0 for all v16 updates.
+Switch branch to a branch named after Angular version, f.e. 0.17.0 for all v17 updates.
 If branch doesn't exist - create it. Apply code changes in that branch.
-Then do:
 
-1. `npm run test:lib`
-2. `npm run build:lib`
-3. Confirm `npm run publish:dry-run`
-4. Publish `npm run publish`
+### Version Bumping
 
-Do not forget to bump the package version before the release. 
-F.e., if this is another v16 change, bump minor version to 0.16.(X+1).
+Use the provided npm scripts to bump the version:
+- `npm run bump:patch` - Bug fixes (0.17.0 → 0.17.1)
+- `npm run bump:minor` - New features (0.17.0 → 0.18.0)
+- `npm run bump:major` - Breaking changes (0.17.0 → 1.0.0)
 
-## Local example development 
+Note: Also bump the version in `projects/ngx-soap/package.json` separately.
 
-1. `git clone -b angular-cli-ilb https://github.com/seyfer/ngx-soap.git`
-2. `cd ngx-soap && npm install`
-3. `ng build ngx-soap`
-4. `ng test ngx-soap`
-5. `ng serve --proxy-config proxy.conf.json`
+### Build and Publish
+
+1. `npm run test:lib` - Run library tests
+2. `npm run build:lib` - Build the library
+3. `npm run publish:dry-run` - Verify package contents
+4. `npm run publish` - Publish to npm
+
+Or use the combined command:
+```bash
+npm run build:lib:publish
+```
+
+## Local development 
+
+### Setup
+```bash
+git clone -b angular-cli-ilb https://github.com/seyfer/ngx-soap.git
+cd ngx-soap && npm install
+```
+
+### Testing (Jest)
+```bash
+npm test                    # Run all tests
+npm run test:lib           # Run library tests only
+npm run test:app           # Run app tests only
+npm run test:coverage      # Run tests with coverage report
+npm run test:watch         # Run tests in watch mode
+```
+
+### Building
+```bash
+npm run build:lib          # Build the library
+npm run build              # Build the example app
+npm run build:all          # Build both
+```
+
+### Development Server
+```bash
+npm start                  # Start dev server with proxy
+# or
+ng serve --proxy-config proxy.conf.json
+```
 
 See example app under `src/app`
+
+## Testing
+
+The library uses Jest for unit testing with the following test structure:
+- Security tests (BasicAuth, Bearer, WSSecurity, WSSecurityCert)
+- HTTP client tests
+- WSDL parsing tests (with fixtures in `test/fixtures/`)
+- Client operations tests
+
+Tests are located in `projects/ngx-soap/test/` with real WSDL fixtures for comprehensive testing.
 
 ## Author
 [Luca Lulani](https://github.com/lula)
