@@ -1,6 +1,6 @@
 {
   "name": "ngx-soap-next",
-  "version": "0.16.3",
+  "version": "0.16.4",
   "description": "SOAP service for Angular",
   "homepage": "https://github.com/seyfer/ngx-soap",
   "author": "Luca Lulani, marcward, Oleg Abrazhaev",
@@ -18,6 +18,11 @@
     "SOAP",
     "WSDL"
   ],
+  "scripts": {
+    "bump:patch": "npm version patch --no-git-tag-version",
+    "bump:minor": "npm version minor --no-git-tag-version",
+    "bump:major": "npm version major --no-git-tag-version"
+  },
   "dependencies": {
     "tslib": "^2.6.2"
   },

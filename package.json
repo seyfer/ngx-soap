@@ -1,6 +1,6 @@
 {
   "name": "ngx-soap-next",
-  "version": "0.16.3",
+  "version": "0.16.4",
   "description": "SOAP service for Angular",
   "main": "src/index.js",
   "module": "src/index.js",
@@ -20,7 +20,10 @@
     "pack": "cd ./dist/ngx-soap/ && npm pack && cd ../.. && cp dist/ngx-soap/ngx*tgz ..",
     "publish": "cd ./dist/ngx-soap/ && npm publish",
     "publish:dry-run": "cd ./dist/ngx-soap/ && npm publish --dry-run",
-    "build:lib:publish": "npm run test:lib:headless && npm run build:lib && npm run pack && npm run publish"
+    "build:lib:publish": "npm run test:lib:headless && npm run build:lib && npm run pack && npm run publish",
+    "bump:patch": "npm version patch --no-git-tag-version",
+    "bump:minor": "npm version minor --no-git-tag-version",
+    "bump:major": "npm version major --no-git-tag-version"
   },
   "keywords": [
     "Angular",
