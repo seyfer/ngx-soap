@@ -1,19 +1,12 @@
 {
   "name": "ngx-soap-next",
-  "version": "0.16.4",
+  "version": "0.17.0",
   "description": "SOAP service for Angular",
   "homepage": "https://github.com/seyfer/ngx-soap",
   "author": "Luca Lulani, marcward, Oleg Abrazhaev",
   "license": "MIT",
   "keywords": [
     "Angular",
-    "Angular10",
-    "Angular11",
-    "Angular12",
-    "Angular13",
-    "Angular14",
-    "Angular15",
-    "Angular16",
     "Angular17",
     "@angular",
     "SOAP",
@@ -28,8 +21,8 @@
     "tslib": "^2.6.2"
   },
   "peerDependencies": {
-    "@angular/common": ">=10.0.0 <=17.3.12",
-    "@angular/core": ">=10.0.0 <=17.3.12",
+    "@angular/common": "^17.0.0",
+    "@angular/core": "^17.0.0",
     "assert": "^2.1.0",
     "bluebird": "^3.7.2",
     "buffer": "^5.1.0",

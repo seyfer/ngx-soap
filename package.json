@@ -1,6 +1,6 @@
 {
   "name": "ngx-soap-next",
-  "version": "0.16.4",
+  "version": "0.17.0",
   "description": "SOAP service for Angular",
   "main": "src/index.js",
   "module": "src/index.js",
@@ -27,13 +27,6 @@
   },
   "keywords": [
     "Angular",
-    "Angular10",
-    "Angular11",
-    "Angular12",
-    "Angular13",
-    "Angular14",
-    "Angular15",
-    "Angular16",
     "Angular17",
     "@angular",
     "SOAP",
