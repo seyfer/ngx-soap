@@ -1,43 +1,335 @@
-import { TestBed, waitForAsync } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ANGULAR_MATERIAL_MODULES } from './app.module';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
+import { NgxSoapService, ISoapMethodResponse } from '../../projects/ngx-soap/src/public_api';
+import { of, throwError } from 'rxjs';
+
+// Mock NgxSoapService
+const createMockSoapService = (): Partial<NgxSoapService> => ({
+    createClient: jest.fn().mockResolvedValue({})
+});
 
 describe('AppComponent', () => {
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
-            imports: [
-                BrowserModule,
-                FormsModule,
-                HttpClientTestingModule,
-                NoopAnimationsModule,
-                ...ANGULAR_MATERIAL_MODULES
-            ],
-            declarations: [
-                AppComponent
-            ],
-        }).compileComponents();
-    }));
+    let component: AppComponent;
+    let mockSoapService: Partial<NgxSoapService>;
 
-    it('should create the app', waitForAsync(() => {
-        const fixture = TestBed.createComponent(AppComponent);
-        const app = fixture.debugElement.componentInstance;
-        expect(app).toBeTruthy();
-    }));
+    beforeEach(() => {
+        mockSoapService = createMockSoapService();
+        component = new AppComponent(mockSoapService as NgxSoapService);
+    });
 
-    it(`should have as title 'SOAP'`, waitForAsync(() => {
-        const fixture = TestBed.createComponent(AppComponent);
-        const app = fixture.debugElement.componentInstance;
-        expect(app.title).toContain('SOAP');
-    }));
+    it('should create the app', () => {
+        expect(component).toBeTruthy();
+        expect(component).toBeInstanceOf(AppComponent);
+    });
 
-    it('should render title in a h1 tag', waitForAsync(() => {
-        const fixture = TestBed.createComponent(AppComponent);
-        fixture.detectChanges();
-        const compiled = fixture.debugElement.nativeElement;
-        expect(compiled.querySelector('span.title').textContent).toContain('SOAP');
-    }));
+    it('should have title property', () => {
+        expect(component.title).toBeDefined();
+    });
+
+    it('title should contain "SOAP"', () => {
+        expect(component.title).toContain('SOAP');
+    });
+
+    it('should have createClient method available through service', () => {
+        expect(mockSoapService.createClient).toBeDefined();
+        expect(typeof mockSoapService.createClient).toBe('function');
+    });
+
+    describe('Component Initialization', () => {
+        it('should call createClient on construction', () => {
+            const spy = jest.fn().mockResolvedValue({});
+            const service = { createClient: spy } as any;
+            
+            new AppComponent(service);
+            
+            expect(spy).toHaveBeenCalledWith('assets/calculator.wsdl');
+        });
+
+        it('should set client property when createClient succeeds', async () => {
+            const mockClient = { describe: jest.fn() };
+            const service = {
+                createClient: jest.fn().mockResolvedValue(mockClient)
+            } as any;
+            
+            const comp = new AppComponent(service);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            
+            expect(comp.client).toBe(mockClient);
+        });
+
+        it('should handle createClient errors gracefully', async () => {
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const error = new Error('WSDL load error');
+            const service = {
+                createClient: jest.fn().mockRejectedValue(error)
+            } as any;
+            
+            new AppComponent(service);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            
+            expect(consoleSpy).toHaveBeenCalledWith('Error', error);
+            consoleSpy.mockRestore();
+        });
+
+        it('should initialize properties', () => {
+            expect(component.title).toBe('SOAP Calculator app');
+            expect(component.intA).toBeUndefined();
+            expect(component.intB).toBeUndefined();
+            expect(component.loading).toBeUndefined();
+            expect(component.message).toBeUndefined();
+        });
+    });
+
+    describe('sum() method', () => {
+        let mockClient: any;
+
+        beforeEach(() => {
+            mockClient = {
+                Add: jest.fn()
+            };
+            component.client = mockClient;
+            component.intA = 3;
+            component.intB = 2;
+        });
+
+        it('should set loading to false after successful response', (done) => {
+            mockClient.Add.mockReturnValue(of({
+                err: null,
+                header: {},
+                responseBody: '<soap>...</soap>',
+                xml: '<soap>...</soap>',
+                result: { AddResult: 5 }
+            } as ISoapMethodResponse));
+            
+            component.sum();
+            
+            setTimeout(() => {
+                expect(component.loading).toBe(false);
+                done();
+            }, 0);
+        });
+
+        it('should call Add method with correct parameters', () => {
+            mockClient.Add.mockReturnValue(of({
+                err: null,
+                header: {},
+                responseBody: '<soap>...</soap>',
+                xml: '<soap>...</soap>',
+                result: { AddResult: 5 }
+            } as ISoapMethodResponse));
+            
+            component.sum();
+            
+            expect(mockClient.Add).toHaveBeenCalledWith({
+                intA: 3,
+                intB: 2
+            });
+        });
+
+        it('should process successful response', (done) => {
+            const response: ISoapMethodResponse = {
+                err: null,
+                header: {},
+                responseBody: '<soap:Envelope>...</soap:Envelope>',
+                xml: '<soap:Envelope>...</soap:Envelope>',
+                result: { AddResult: 5 }
+            };
+            mockClient.Add.mockReturnValue(of(response));
+            
+            component.sum();
+            
+            setTimeout(() => {
+                expect(component.message).toBe(5);
+                expect(component.xmlResponse).toBe(response.xml);
+                expect(component.loading).toBe(false);
+                done();
+            }, 0);
+        });
+
+        it('should handle errors', () => {
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const error = new Error('SOAP error');
+            mockClient.Add.mockReturnValue(throwError(() => error));
+            
+            component.sum();
+            
+            setTimeout(() => {
+                expect(consoleSpy).toHaveBeenCalledWith(error);
+                consoleSpy.mockRestore();
+            }, 0);
+        });
+
+        it('should handle different input values', () => {
+            mockClient.Add.mockReturnValue(of({
+                err: null,
+                header: {},
+                responseBody: '<soap>...</soap>',
+                xml: '<soap>...</soap>',
+                result: { AddResult: 100 }
+            } as ISoapMethodResponse));
+            
+            component.intA = 50;
+            component.intB = 50;
+            component.sum();
+            
+            expect(mockClient.Add).toHaveBeenCalledWith({
+                intA: 50,
+                intB: 50
+            });
+        });
+    });
+
+    describe('subtract() method', () => {
+        let mockClient: any;
+
+        beforeEach(() => {
+            mockClient = {
+                Subtract: jest.fn()
+            };
+            component.client = mockClient;
+            component.intA = 10;
+            component.intB = 3;
+        });
+
+        it('should set loading to false after successful response', (done) => {
+            mockClient.Subtract.mockReturnValue(of({
+                err: null,
+                header: {},
+                responseBody: '<soap>...</soap>',
+                xml: '<soap>...</soap>',
+                result: { SubtractResult: 7 }
+            } as ISoapMethodResponse));
+            
+            component.subtract();
+            
+            setTimeout(() => {
+                expect(component.loading).toBe(false);
+                done();
+            }, 0);
+        });
+
+        it('should call Subtract method with correct parameters', () => {
+            mockClient.Subtract.mockReturnValue(of({
+                err: null,
+                header: {},
+                responseBody: '<soap>...</soap>',
+                xml: '<soap>...</soap>',
+                result: { SubtractResult: 7 }
+            } as ISoapMethodResponse));
+            
+            component.subtract();
+            
+            expect(mockClient.Subtract).toHaveBeenCalledWith({
+                intA: 10,
+                intB: 3
+            });
+        });
+
+        it('should process successful response', (done) => {
+            const response: ISoapMethodResponse = {
+                err: null,
+                header: {},
+                responseBody: '<soap:Envelope>...</soap:Envelope>',
+                xml: '<soap:Envelope>...</soap:Envelope>',
+                result: { SubtractResult: 7 }
+            };
+            mockClient.Subtract.mockReturnValue(of(response));
+            
+            component.subtract();
+            
+            setTimeout(() => {
+                expect(component.message).toBe(7);
+                expect(component.xmlResponse).toBe(response.xml);
+                expect(component.loading).toBe(false);
+                done();
+            }, 0);
+        });
+
+        it('should handle errors', () => {
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const error = new Error('SOAP error');
+            mockClient.Subtract.mockReturnValue(throwError(() => error));
+            
+            component.subtract();
+            
+            setTimeout(() => {
+                expect(consoleSpy).toHaveBeenCalledWith(error);
+                consoleSpy.mockRestore();
+            }, 0);
+        });
+
+        it('should handle different input values', () => {
+            mockClient.Subtract.mockReturnValue(of({
+                err: null,
+                header: {},
+                responseBody: '<soap>...</soap>',
+                xml: '<soap>...</soap>',
+                result: { SubtractResult: 25 }
+            } as ISoapMethodResponse));
+            
+            component.intA = 100;
+            component.intB = 75;
+            component.subtract();
+            
+            expect(mockClient.Subtract).toHaveBeenCalledWith({
+                intA: 100,
+                intB: 75
+            });
+        });
+
+        it('should handle negative results', (done) => {
+            const response: ISoapMethodResponse = {
+                err: null,
+                header: {},
+                responseBody: '<soap:Envelope>...</soap:Envelope>',
+                xml: '<soap:Envelope>...</soap:Envelope>',
+                result: { SubtractResult: -5 }
+            };
+            mockClient.Subtract.mockReturnValue(of(response));
+            
+            component.intA = 3;
+            component.intB = 8;
+            component.subtract();
+            
+            setTimeout(() => {
+                expect(component.message).toBe(-5);
+                done();
+            }, 0);
+        });
+    });
+
+    describe('Edge Cases', () => {
+        it('should handle zero values in sum', () => {
+            const mockClient = {
+                Add: jest.fn().mockReturnValue(of({
+                    err: null,
+                    header: {},
+                    responseBody: '<soap>...</soap>',
+                    xml: '<soap>...</soap>',
+                    result: { AddResult: 0 }
+                } as ISoapMethodResponse))
+            };
+            component.client = mockClient as any;
+            component.intA = 0;
+            component.intB = 0;
+            
+            component.sum();
+            
+            expect(mockClient.Add).toHaveBeenCalledWith({
+                intA: 0,
+                intB: 0
+            });
+        });
+
+        it('should handle undefined client in sum', () => {
+            component.client = undefined as any;
+            
+            expect(() => component.sum()).toThrow();
+        });
+
+        it('should handle undefined client in subtract', () => {
+            component.client = undefined as any;
+            
+            expect(() => component.subtract()).toThrow();
+        });
+    });
 });

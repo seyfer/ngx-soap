@@ -1,9 +1,19 @@
-import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
+import { NgxSoapService } from './ngx-soap.service';
+import { HttpClient } from '@angular/common/http';
+import { of, throwError } from 'rxjs';
 
-import { ISoapMethodResponse, NgxSoapService } from './ngx-soap.service';
-import { NgxSoapModule } from './ngx-soap.module';
 
+// Mock HttpClient
+const createMockHttpClient = (): jest.Mocked<HttpClient> => ({
+  get: jest.fn(),
+  post: jest.fn(),
+  put: jest.fn(),
+  delete: jest.fn(),
+  patch: jest.fn(),
+  head: jest.fn(),
+  options: jest.fn(),
+  request: jest.fn(),
+} as any);
 
 const PROXIED_CALCULATOR_WSDL = `<?xml version="1.0" encoding="utf-8"?>
 <wsdl:definitions 
@@ -213,101 +223,173 @@ const PROXIED_CALCULATOR_WSDL = `<?xml version="1.0" encoding="utf-8"?>
     </wsdl:service>
 </wsdl:definitions>`;
 
-let service: NgxSoapService;
-let httpMock: HttpTestingController;
-
 describe('NgxSoapService', () => {
+    let service: NgxSoapService;
+    let mockHttpClient: jest.Mocked<HttpClient>;
+
     beforeEach(() => {
-        TestBed.configureTestingModule({
-            imports: [
-                HttpClientTestingModule,
-                NgxSoapModule
-            ],
-            providers: [NgxSoapService]
-        });
-
-        service = TestBed.inject(NgxSoapService);
-        httpMock = TestBed.inject(HttpTestingController);
-    });
-
-    afterEach(() => {
-        httpMock.verify();
+        mockHttpClient = createMockHttpClient();
+        service = new NgxSoapService(mockHttpClient);
     });
 
     it('should be created', () => {
         expect(service).toBeTruthy();
+        expect(service).toBeInstanceOf(NgxSoapService);
     });
 
-    it('should create client from calculator.wsdl', () => {
-        service.createClient('/calculator.wsdl', { disableCache: true })
-            .then(client => expect(client).toBeTruthy())
-            .catch(err => console.log('Error', err));
-
-        const req = httpMock.expectOne('/calculator.wsdl');
-        expect(req.request.method).toBe('GET');
-        req.flush(PROXIED_CALCULATOR_WSDL);
+    it('should have createClient method', () => {
+        expect(service.createClient).toBeDefined();
+        expect(typeof service.createClient).toBe('function');
     });
 
-    it('3 + 2 should be equal to 5', () => {
-        service.createClient('/calculator.wsdl', { disableCache: true })
-            .then(client => {
-                expect(client).toBeTruthy();
-
-                //todo: investigate later, doesn't work in tests for some reason
-                //
-                // const body = {
-                //     intA: 3,
-                //     intB: 2,
-                // };
-                //
-                // (<any>client).Add(body).subscribe(
-                //     (res: ISoapMethodResponse) => {
-                //         console.log('method response', res);
-                //         expect(res.result.AddResult).toBe(5);
-                //     },
-                //     err => console.log(err)
-                // );
-                //
-                // client.call('Add', body, { exchangeId: '11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000' })
-                //     .subscribe((soapResponse: ISoapMethodResponse) => {
-                //         console.log('result', soapResponse.result);
-                //         expect(soapResponse.result.AddResult).toBe(5);
-                //     }, err => console.error('Error add request', err));
-                //
-                // // let req2 = httpMock.expectOne('/calculator/calculator.asmx');
-                // // let req2 = httpMock.expectOne(() => true);
-                // const req2 = httpMock
-                //     .expectOne(req => {
-                //         console.log('mock request', req);
-                //         return req.method === 'POST' && req.url === 'http://example.org';
-                //     });
-                // expect(req2.request.method).toBe('POST');
-                //
-                // req2.flush('<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><AddResponse xmlns="http://tempuri.org/"><AddResult>5</AddResult></AddResponse></soap:Body></soap:Envelope>');
-                // httpMock.verify();
-            })
-            .catch(err => console.error('Error client create', err));
-
-        let req = httpMock.expectOne('/calculator.wsdl');
-        expect(req.request.method).toBe('GET');
-        req.flush(PROXIED_CALCULATOR_WSDL);
+    it('should pass httpClient to options when createClient is called', () => {
+        const wsdlUrl = '/calculator.wsdl';
+        const options: any = { disableCache: true };
+        
+        // Call createClient (it will fail to actually create client without proper mocks, but that's ok)
+        service.createClient(wsdlUrl, options).catch(() => {
+            // Expected to fail without proper WSDL response
+        });
+        
+        // Verify the httpClient was passed in options
+        expect(options.httpClient).toBe(mockHttpClient);
     });
 
-    it('should raise an error when calling a missing operation', () => {
-        service
-            .createClient('/calculator.wsdl', { disableCache: true })
-            .then(client => {
-                const method = 'NonExistingMethod';
-                client
-                    .call(method, {}, { exchangeId: '11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000' })
-                    .subscribe({
-                        next: () => {},
-                        error: err => expect(err).toBe(`Method ${ method } not found`)
-                    });
+    it('should accept endpoint parameter in createClient', () => {
+        const wsdlUrl = '/test.wsdl';
+        const options: any = { disableCache: true };
+        const endpoint = 'http://example.com/soap';
+        
+        service.createClient(wsdlUrl, options, endpoint).catch(() => {
+            // Expected to fail without proper WSDL response
+        });
+        
+        // The service should add httpClient to the options
+        expect(options.httpClient).toBe(mockHttpClient);
+    });
+
+    describe('Error Handling', () => {
+        it('should handle network errors gracefully', async () => {
+            const networkError = new Error('Network error');
+            mockHttpClient.get.mockReturnValue(throwError(() => networkError) as any);
+            
+            await expect(service.createClient('/test.wsdl'))
+                .rejects.toThrow();
+        });
+
+        it('should handle invalid WSDL XML', async () => {
+            mockHttpClient.get.mockReturnValue(of('Invalid XML content') as any);
+            
+            await expect(service.createClient('/invalid.wsdl'))
+                .rejects.toThrow();
+        });
+
+        it('should handle empty WSDL response', async () => {
+            mockHttpClient.get.mockReturnValue(of('') as any);
+            
+            await expect(service.createClient('/empty.wsdl'))
+                .rejects.toThrow();
+        });
+
+        it('should handle malformed WSDL structure', async () => {
+            const malformedWsdl = '<?xml version="1.0"?><root></root>';
+            mockHttpClient.get.mockReturnValue(of(malformedWsdl) as any);
+            
+            await expect(service.createClient('/malformed.wsdl'))
+                .rejects.toThrow();
+        });
+    });
+
+    describe('Options Handling', () => {
+        it('should work with empty options object', () => {
+            service.createClient('/test.wsdl', {}).catch(() => {
+                // Expected to fail without proper WSDL response
             });
+            
+            expect(mockHttpClient.get).toHaveBeenCalled();
+        });
 
-        const req = httpMock.expectOne('/calculator.wsdl');
-        expect(req.request.method).toBe('GET');
-        req.flush(PROXIED_CALCULATOR_WSDL);
+        it('should work without options parameter', () => {
+            service.createClient('/test.wsdl').catch(() => {
+                // Expected to fail without proper WSDL response
+            });
+            
+            expect(mockHttpClient.get).toHaveBeenCalled();
+        });
+
+        it('should preserve existing options while adding httpClient', () => {
+            const options: any = { 
+                disableCache: true,
+                customOption: 'test',
+                endpoint: 'http://example.com'
+            };
+            
+            service.createClient('/test.wsdl', options).catch(() => {
+                // Expected to fail without proper WSDL response
+            });
+            
+            expect(options.httpClient).toBe(mockHttpClient);
+            expect(options.disableCache).toBe(true);
+            expect(options.customOption).toBe('test');
+            expect(options.endpoint).toBe('http://example.com');
+        });
+    });
+
+    describe('WSDL Client Creation', () => {
+        it('should create client with valid WSDL', async () => {
+            mockHttpClient.get.mockReturnValue(of(PROXIED_CALCULATOR_WSDL) as any);
+            
+            const client = await service.createClient('/calculator.wsdl', { disableCache: true });
+            
+            expect(client).toBeTruthy();
+            expect(client).toHaveProperty('describe');
+            expect(mockHttpClient.get).toHaveBeenCalledWith('/calculator.wsdl', { responseType: 'text' });
+        });
+
+        it('should create client with custom endpoint', async () => {
+            mockHttpClient.get.mockReturnValue(of(PROXIED_CALCULATOR_WSDL) as any);
+            const customEndpoint = 'http://custom.example.com/soap';
+            
+            const client = await service.createClient(
+                '/calculator.wsdl',
+                { disableCache: true },
+                customEndpoint
+            );
+            
+            expect(client).toBeTruthy();
+        });
+
+        it('should handle WSDL with multiple services', async () => {
+            mockHttpClient.get.mockReturnValue(of(PROXIED_CALCULATOR_WSDL) as any);
+            
+            const client = await service.createClient('/calculator.wsdl', { disableCache: true });
+            
+            expect(client).toBeTruthy();
+            const description = client.describe();
+            expect(description).toBeTruthy();
+        });
+    });
+
+    describe('HTTP Client Integration', () => {
+        it('should make GET request for WSDL with correct parameters', async () => {
+            mockHttpClient.get.mockReturnValue(of(PROXIED_CALCULATOR_WSDL) as any);
+            const wsdlUrl = '/service.wsdl';
+            
+            await service.createClient(wsdlUrl, { disableCache: true });
+            
+            expect(mockHttpClient.get).toHaveBeenCalledWith(
+                wsdlUrl,
+                expect.objectContaining({ responseType: 'text' })
+            );
+        });
+
+        it('should pass httpClient to SOAP client for operations', async () => {
+            mockHttpClient.get.mockReturnValue(of(PROXIED_CALCULATOR_WSDL) as any);
+            
+            const options: any = { disableCache: true };
+            await service.createClient('/calculator.wsdl', options);
+            
+            expect(options.httpClient).toBe(mockHttpClient);
+        });
     });
 });
