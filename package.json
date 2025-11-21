@@ -16,14 +16,13 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:lib": "jest --testPathPattern=projects/ngx-soap",
-    "test:lib:headless": "jest --testPathPattern=projects/ngx-soap --ci",
     "test:app": "jest --testPathPattern=src",
-    "test:all": "jest --ci --coverage",
     "build:lib": "ng build --configuration production ngx-soap && cp README.md dist/ngx-soap && cp LICENSE dist/ngx-soap",
+    "build:all": "npm run build:lib && npm run build",
     "pack": "cd ./dist/ngx-soap/ && npm pack && cd ../.. && cp dist/ngx-soap/ngx*tgz ..",
     "publish": "cd ./dist/ngx-soap/ && npm publish",
     "publish:dry-run": "cd ./dist/ngx-soap/ && npm publish --dry-run",
-    "build:lib:publish": "npm run test:lib:headless && npm run build:lib && npm run pack && npm run publish",
+    "build:lib:publish": "npm run test:lib && npm run build:lib && npm run pack && npm run publish",
     "bump:patch": "npm version patch --no-git-tag-version",
     "bump:minor": "npm version minor --no-git-tag-version",
     "bump:major": "npm version major --no-git-tag-version"
@@ -78,7 +77,7 @@
     "tslib": "^2.6.2",
     "url": "^0.11.3",
     "uuid": "^3.3.2",
-    "xml-crypto": "^1.5.3",
+    "xml-crypto": "^2.1.6",
     "zone.js": "^0.14.2"
   },
   "devDependencies": {
