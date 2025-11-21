@@ -71,7 +71,7 @@
     "httpntlm": "^1.7.6",
     "lodash": "^4.17.10",
     "process": "^0.11.10",
-    "rxjs": "^7.8.1",
+    "rxjs": "^7.8.2",
     "sax": "^1.2.4",
     "stream": "0.0.2",
     "ts-evaluator": "^1.2.0",
@@ -92,6 +92,6 @@
     "jest-preset-angular": "^14.2.4",
     "ng-packagr": "^17.3.0",
     "ts-jest": "^29.4.5",
-    "typescript": "~5.2.2"
+    "typescript": "~5.4.5"
   }
 }
