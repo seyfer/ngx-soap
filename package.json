@@ -19,7 +19,8 @@
     "build:lib": "ng build --configuration production ngx-soap && cp README.md dist/ngx-soap && cp LICENSE dist/ngx-soap",
     "pack": "cd ./dist/ngx-soap/ && npm pack && cd ../.. && cp dist/ngx-soap/ngx*tgz ..",
     "publish": "cd ./dist/ngx-soap/ && npm publish",
-    "publish:dry-run": "cd ./dist/ngx-soap/ && npm publish --dry-run"
+    "publish:dry-run": "cd ./dist/ngx-soap/ && npm publish --dry-run",
+    "build:lib:publish": "npm run test:lib:headless && npm run build:lib && npm run pack && npm run publish"
   },
   "keywords": [
     "Angular",
