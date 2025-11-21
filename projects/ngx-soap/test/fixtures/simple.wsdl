@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:tns="http://example.com/simple"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://example.com/simple"
+    name="SimpleService">
+    
+    <types>
+        <xsd:schema targetNamespace="http://example.com/simple">
+            <xsd:element name="EchoRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="message" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="EchoResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="result" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:schema>
+    </types>
+    
+    <message name="EchoRequestMessage">
+        <part name="parameters" element="tns:EchoRequest"/>
+    </message>
+    
+    <message name="EchoResponseMessage">
+        <part name="parameters" element="tns:EchoResponse"/>
+    </message>
+    
+    <portType name="SimplePortType">
+        <operation name="Echo">
+            <input message="tns:EchoRequestMessage"/>
+            <output message="tns:EchoResponseMessage"/>
+        </operation>
+    </portType>
+    
+    <binding name="SimpleBinding" type="tns:SimplePortType">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <operation name="Echo">
+            <soap:operation soapAction="http://example.com/simple/Echo"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+    
+    <service name="SimpleService">
+        <port name="SimplePort" binding="tns:SimpleBinding">
+            <soap:address location="http://example.com/simple"/>
+        </port>
+    </service>
+</definitions>

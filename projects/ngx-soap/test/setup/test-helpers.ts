@@ -69,6 +69,15 @@ export function decodeBase64(str: string): string {
     return Buffer.from(str, 'base64').toString('utf-8');
 }
 
+// Fixture loading helper
+export function loadFixture(filename: string): string {
+    const fs = require('fs');
+    const path = require('path');
+    const fixturesDir = path.join(__dirname, '../fixtures');
+    const filePath = path.join(fixturesDir, filename);
+    return fs.readFileSync(filePath, 'utf8');
+}
+
 /**
  * Check if string is valid Base64
  */

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:tns="http://example.com/minimal"
+    targetNamespace="http://example.com/minimal"
+    name="MinimalService">
+    <types/>
+    <portType name="MinimalPort"/>
+    <service name="MinimalService"/>
+</definitions>
