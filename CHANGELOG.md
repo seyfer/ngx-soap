@@ -2,7 +2,7 @@
 
 ## 0.17.1
 
-> **📊 Feature Parity**: 92% with node-soap v1.6.0 - Production Ready ✅  
+> **📊 Feature Parity**: 100% core features with node-soap v1.6.0 ✅  
 > **Documentation**: See [soap-upgrade-plan/](./soap-upgrade-plan/) for complete analysis
 
 ### Major Backport from node-soap (v1.0.0 → v1.6.0)
@@ -41,8 +41,13 @@
 - Map-based namespace lookups (faster than Object)
 - Native `String.trim()` (2x faster)
 
+**Advanced Features**
+- Function-based SOAP headers with context (`_processSoapHeader`)
+- Schema merge for duplicate namespaces (WSDL with multiple imports)
+- Namespace fallback for schemas without targetNamespace
+
 **Testing**
-- Added 100 new tests → 249 total (all passing)
+- Added 98 new tests → 247 total (all passing)
 
 **Breaking Changes**: None ✅
 

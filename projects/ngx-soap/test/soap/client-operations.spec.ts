@@ -59,6 +59,51 @@ describe('Client - Header Operations', () => {
             
             expect(mockWSDL.objectToXML).toHaveBeenCalled();
         });
+
+        it('should handle function-based SOAP headers', () => {
+            const headerFn = jest.fn(() => ({ token: 'dynamic-token' }));
+            const index = client.addSoapHeader(headerFn, 'DynamicHeader');
+            
+            expect(client.soapHeaders).toBeDefined();
+            expect(client.soapHeaders.length).toBe(1);
+            expect(typeof client.soapHeaders[index]).toBe('function');
+        });
+
+        it('should apply function-based headers with arguments', () => {
+            const headerFn = jest.fn((userId) => ({ 
+                AuthToken: `token-${userId}`,
+                Timestamp: new Date().toISOString()
+            }));
+            
+            client.addSoapHeader(headerFn, 'AuthHeader', 'http://auth.example.com');
+            const headerFunction = client.soapHeaders[0];
+            
+            // Call the function with arguments
+            const result = headerFunction('user123');
+            
+            expect(headerFn).toHaveBeenCalledWith('user123');
+            expect(mockWSDL.objectToXML).toHaveBeenCalled();
+        });
+
+        it('should handle function returning string', () => {
+            const headerFn = () => '<custom:Token>XYZ</custom:Token>';
+            client.addSoapHeader(headerFn, 'CustomHeader');
+            
+            const headerFunction = client.soapHeaders[0];
+            const result = headerFunction();
+            
+            expect(result).toBe('<custom:Token>XYZ</custom:Token>');
+        });
+
+        it('should change function-based SOAP headers', () => {
+            const headerFn1 = () => ({ token: 'old' });
+            const headerFn2 = () => ({ token: 'new' });
+            
+            const index = client.addSoapHeader(headerFn1, 'Header');
+            client.changeSoapHeader(index, headerFn2, 'Header');
+            
+            expect(typeof client.soapHeaders[index]).toBe('function');
+        });
     });
 
     describe('HTTP Headers', () => {

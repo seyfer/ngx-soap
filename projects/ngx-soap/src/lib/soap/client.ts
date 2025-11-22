@@ -45,13 +45,29 @@ export const Client = function(wsdl, endpoint, options) {
     Promise.all([this, promiseOptions]);
 };
 
+Client.prototype._processSoapHeader = function(soapHeader, name, namespace, xmlns) {
+    switch (typeof soapHeader) {
+        case 'object':
+            return this.wsdl.objectToXML(soapHeader, name, namespace, xmlns, true);
+        case 'function':
+            const self = this;
+            return function() {
+                const result = soapHeader.apply(null, arguments);
+                if (typeof result === 'object') {
+                    return self.wsdl.objectToXML(result, name, namespace, xmlns, true);
+                }
+                return result;
+            };
+        default:
+            return soapHeader;
+    }
+};
+
 Client.prototype.addSoapHeader = function(soapHeader, name, namespace, xmlns) {
     if (!this.soapHeaders) {
         this.soapHeaders = [];
     }
-    if (typeof soapHeader === 'object') {
-        soapHeader = this.wsdl.objectToXML(soapHeader, name, namespace, xmlns, true);
-    }
+    soapHeader = this._processSoapHeader(soapHeader, name, namespace, xmlns);
     return this.soapHeaders.push(soapHeader) - 1;
 };
 
@@ -59,9 +75,7 @@ Client.prototype.changeSoapHeader = function(index, soapHeader, name, namespace,
     if (!this.soapHeaders) {
         this.soapHeaders = [];
     }
-    if (typeof soapHeader === 'object') {
-        soapHeader = this.wsdl.objectToXML(soapHeader, name, namespace, xmlns, true);
-    }
+    soapHeader = this._processSoapHeader(soapHeader, name, namespace, xmlns);
     this.soapHeaders[index] = soapHeader;
 };
 

@@ -377,12 +377,18 @@ SchemaElement.prototype.addChild = function (child) {
 TypesElement.prototype.addChild = function (child) {
   assert(child instanceof SchemaElement);
 
-  let targetNamespace = child.$targetNamespace;
+  // Fallback to include namespace if targetNamespace is missing
+  let childInclude = child.includes && child.includes.find(function(e) {
+    return e.hasOwnProperty('namespace');
+  });
+  let childIncludeNs = childInclude && childInclude.namespace;
+  let targetNamespace = child.$targetNamespace || (child.includes && child.includes[0] && child.includes[0].namespace) || childIncludeNs;
 
   if (!this.schemas.hasOwnProperty(targetNamespace)) {
     this.schemas[targetNamespace] = child;
   } else {
-    console.error('Target-Namespace "' + targetNamespace + '" already in use by another Schema!');
+    // Merge schemas with duplicate namespaces instead of error
+    this.schemas[targetNamespace].merge(child);
   }
 };
 

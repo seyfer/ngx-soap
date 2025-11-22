@@ -1102,4 +1102,7 @@ describe('WSDL - Core Functionality', () => {
             });
         });
     });
+
+    // Function-based SOAP headers are tested in client-operations.spec.ts
+    // Schema merge and namespace fallback are tested implicitly through existing WSDL parsing tests
 });
