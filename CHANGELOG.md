@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.16.4 / 0.16.0
+
+- Updated to Angular 16 compatibility
+- Updated all @angular packages to version 16
+- Added headless test run capability
+- Added publish shortcut
+- Merged improvements from master and 0.15.0
+
 ## 0.5.0-beta.7
 
 Client events have been removed due to problems with Angular prod bundle. See issue [#29](https://github.com/lula/ngx-soap/issues/29).
