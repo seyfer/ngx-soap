@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.12.1 / 0.12.0
+
+- Updated to Angular 12 compatibility
+- Fixed library build configuration
+- Fixed example app build and tests
+- Debugged and fixed library tests
+- Build system improvements
+
 ## 0.5.0-beta.7
 
 Client events have been removed due to problems with Angular prod bundle. See issue [#29](https://github.com/lula/ngx-soap/issues/29).
