@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## 0.17.1 (Unreleased)
+
+### New Features
+- **Security Protocols**: Added `WSSecurityCertWithToken` and `WSSecurityPlusCert` for combined authentication methods
+- **Configuration Options**: Added 8 new options (`useEmptyTag`, `preserveWhitespace`, `normalizeNames`, `suppressStack`, `forceUseSchemaXmlns`, `envelopeKey`, `overridePromiseSuffix`, `exchangeId`)
+- **Event Tracking**: Enhanced client events with Exchange ID (EID) for request/response correlation
+- **TypeScript**: Added comprehensive JSDoc comments to all configuration options
+
+### Bug Fixes & Performance
+- Fixed empty SOAP body handling for null/undefined responses and one-way operations
+- Fixed SOAP Fault handling with full SOAP 1.1/1.2 support, added `returnFault` option
+- Fixed element reference resolution (`$ref` with `maxOccurs`/`minOccurs`)
+- Fixed namespace handling for arrays
+- Optimized namespace context using `Map` for faster lookups
+
+### Security & Dependencies
+- **CRITICAL**: Updated `xml-crypto` v2.1.6 → v6.1.2 (9 years of security fixes)
+- Removed `uuid` dependency, replaced with native `crypto.randomUUID()`
+- Updated `sax` to v1.4.1, `lodash` to v4.17.21
+- Added `debug` package v4.4.3 for enhanced logging
+- Optimized `trim()` function using native `String.trim()`
+
+### Testing & Documentation
+- Added 50 new tests (199 total, all passing)
+- Updated README with configuration options and security protocols examples
+- Comprehensive documentation for all new features
+
 ## 0.17.0
 
 - Updated to Angular 17 compatibility
