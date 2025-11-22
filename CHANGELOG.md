@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 0.10.0
+
+- Updated to Angular 11 compatibility
+- Applied Angular CLI migrations for v11:
+  - Updated workspace dependencies
+  - Updated Angular configuration
+  - Added declaration map compiler option
+  - Replaced ng-packagr builder
+- Updated all @angular packages to version 11
+- Updated build configuration and dependencies
+- Fixed library dependencies
+
+## 0.8.0
+
+- Prepared for Angular 11 migration
+- Updated build tooling and configuration
+- Merged improvements from 0.7.0
+
 ## 0.5.0-beta.7
 
 Client events have been removed due to problems with Angular prod bundle. See issue [#29](https://github.com/lula/ngx-soap/issues/29).
