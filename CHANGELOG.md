@@ -13,6 +13,74 @@
 - Updated README documentation
 - Improved .gitignore configuration
 
+## 0.16.4 / 0.16.0
+
+- Updated to Angular 16 compatibility
+- Updated all @angular packages to version 16
+- Added headless test run capability
+- Added publish shortcut
+- Merged improvements from master and 0.15.0
+
+## 0.15.1 / 0.15.0
+
+- Updated to Angular 15 compatibility
+- Updated all @angular packages to version 15
+- Merged improvements from 0.14.0
+
+## 0.14.1 / 0.14.0
+
+- Updated to Angular 14 compatibility
+- Updated all @angular packages to version 14
+- Merged improvements from 0.13.0
+
+## 0.13.1 / 0.13.0
+
+- Updated to Angular 13 compatibility
+- Updated all @angular packages to version 13
+- Merged improvements from 0.12.0
+
+## 0.12.1 / 0.12.0
+
+- Updated to Angular 12 compatibility
+- Fixed library build configuration
+- Fixed example app build and tests
+- Debugged and fixed library tests
+- Build system improvements
+
+## 0.11.0
+
+- Updated to Angular 11 compatibility
+- Updated all @angular packages to version 11
+- Fixed build configuration
+- README updates
+
+## 0.10.0
+
+- Release preparation for Angular 10
+- Package renaming finalization (ngx-soap to ngx-soap-next)
+- Build and dependency fixes
+
+## 0.9.0
+
+- Preparatory updates for Angular 12 migration
+- Build system improvements
+
+## 0.8.0
+
+- Prepared for Angular 11 migration
+- Updated build tooling and configuration
+- Merged improvements from 0.7.0
+
+## 0.7.0
+
+- Updated to Angular 10 compatibility ([#87](https://github.com/seyfer/ngx-soap/pull/87))
+- Fixed tests for Angular 10
+- Renamed package from `ngx-soap` to `ngx-soap-next`
+- Security updates:
+  - Updated lodash from 4.17.15 to 4.17.19 ([#83](https://github.com/seyfer/ngx-soap/pull/83))
+  - Updated http-proxy from 1.18.0 to 1.18.1 ([#85](https://github.com/seyfer/ngx-soap/pull/85))
+- Updated dependencies and build configuration
+
 ## 0.5.0-beta.7
 
 Client events have been removed due to problems with Angular prod bundle. See issue [#29](https://github.com/lula/ngx-soap/issues/29).
