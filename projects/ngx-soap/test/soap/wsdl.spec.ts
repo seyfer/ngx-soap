@@ -225,4 +225,148 @@ describe('WSDL - Core Functionality', () => {
             expect(obj).toBeDefined();
         });
     });
+
+    describe('SOAP Fault Handling', () => {
+        let wsdl: any;
+
+        beforeEach(() => {
+            wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', {});
+        });
+
+        it('should parse SOAP 1.1 fault correctly', () => {
+            const soap11Fault = `
+                <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                    <soap:Body>
+                        <soap:Fault>
+                            <faultcode>soap:Server</faultcode>
+                            <faultstring>Internal Server Error</faultstring>
+                            <faultactor>http://example.com/service</faultactor>
+                            <detail>Something went wrong</detail>
+                        </soap:Fault>
+                    </soap:Body>
+                </soap:Envelope>
+            `;
+
+            expect(() => {
+                wsdl.xmlToObject(soap11Fault);
+            }).toThrow();
+
+            try {
+                wsdl.xmlToObject(soap11Fault);
+            } catch (error: any) {
+                expect(error.code).toBe('soap:Server');
+                expect(error.string).toBe('Internal Server Error');
+                expect(error.actor).toBe('http://example.com/service');
+                expect(error.detail).toBe('Something went wrong');
+                expect(error.statusCode).toBe(500);
+            }
+        });
+
+        it('should parse SOAP 1.2 fault correctly', () => {
+            const soap12Fault = `
+                <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+                    <soap:Body>
+                        <soap:Fault>
+                            <soap:Code>
+                                <soap:Value>soap:Receiver</soap:Value>
+                            </soap:Code>
+                            <soap:Reason>
+                                <soap:Text>Processing failed</soap:Text>
+                            </soap:Reason>
+                            <soap:Role>http://example.com/role</soap:Role>
+                            <soap:Detail>Error details here</soap:Detail>
+                        </soap:Fault>
+                    </soap:Body>
+                </soap:Envelope>
+            `;
+
+            expect(() => {
+                wsdl.xmlToObject(soap12Fault);
+            }).toThrow();
+
+            try {
+                wsdl.xmlToObject(soap12Fault);
+            } catch (error: any) {
+                expect(error.code).toBe('soap:Receiver');
+                expect(error.string).toBe('Processing failed');
+                expect(error.actor).toBe('http://example.com/role');
+                expect(error.detail).toBe('Error details here');
+            }
+        });
+
+        it('should return fault as data when returnFault=true', () => {
+            const wsdlWithReturnFault = new (WSDL as any)(
+                loadFixture('minimal.wsdl'),
+                'http://example.com/test.wsdl',
+                { returnFault: true }
+            );
+
+            const soap11Fault = `
+                <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                    <soap:Body>
+                        <soap:Fault>
+                            <faultcode>soap:Client</faultcode>
+                            <faultstring>Invalid request</faultstring>
+                        </soap:Fault>
+                    </soap:Body>
+                </soap:Envelope>
+            `;
+
+            // Should not throw when returnFault is true
+            expect(() => {
+                wsdlWithReturnFault.xmlToObject(soap11Fault);
+            }).not.toThrow();
+
+            const result = wsdlWithReturnFault.xmlToObject(soap11Fault);
+            expect(result).toBeDefined();
+            expect(result.Body).toBeDefined();
+            expect(result.Body.Fault).toBeDefined();
+        });
+
+        it('should throw error when returnFault=false (default)', () => {
+            const wsdlDefault = new (WSDL as any)(
+                loadFixture('minimal.wsdl'),
+                'http://example.com/test.wsdl',
+                { returnFault: false }
+            );
+
+            const soap11Fault = `
+                <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                    <soap:Body>
+                        <soap:Fault>
+                            <faultcode>soap:Server</faultcode>
+                            <faultstring>Error occurred</faultstring>
+                        </soap:Fault>
+                    </soap:Body>
+                </soap:Envelope>
+            `;
+
+            expect(() => {
+                wsdlDefault.xmlToObject(soap11Fault);
+            }).toThrow('Error occurred');
+        });
+
+        it('should include fault details in error object', () => {
+            const soap11Fault = `
+                <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                    <soap:Body>
+                        <soap:Fault>
+                            <faultcode>CustomCode</faultcode>
+                            <faultstring>Custom error message</faultstring>
+                            <detail>Detailed information</detail>
+                        </soap:Fault>
+                    </soap:Body>
+                </soap:Envelope>
+            `;
+
+            try {
+                wsdl.xmlToObject(soap11Fault);
+            } catch (error: any) {
+                expect(error.Fault).toBeDefined();
+                expect(error.Fault.faultcode).toBe('CustomCode');
+                expect(error.Fault.faultstring).toBe('Custom error message');
+                expect(error.Fault.detail).toBe('Detailed information');
+            }
+        });
+    });
 });

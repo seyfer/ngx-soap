@@ -889,6 +889,17 @@ ElementElement.prototype.description = function (definitions, xmlns) {
         }
 
         if (this.$ref) {
+          // For element refs, preserve maxOccurs/minOccurs from the referring element
+          // If the referring element has maxOccurs/minOccurs, apply array notation
+          if (isMany && typeof elem === 'object') {
+            // Apply array notation to the referenced element's name
+            let refElemName = Object.keys(elem)[0];
+            if (refElemName && !refElemName.endsWith('[]')) {
+              let refValue = elem[refElemName];
+              delete elem[refElemName];
+              elem[refElemName + '[]'] = refValue;
+            }
+          }
           element = elem;
         }
         else {
@@ -904,7 +915,20 @@ ElementElement.prototype.description = function (definitions, xmlns) {
       }
       else {
         if (this.$ref) {
-          element = definitions.descriptions.types[typeName];
+          // Apply maxOccurs/minOccurs from referring element to cached description
+          let cachedElem = definitions.descriptions.types[typeName];
+          if (isMany && typeof cachedElem === 'object') {
+            let refElemName = Object.keys(cachedElem)[0];
+            if (refElemName && !refElemName.endsWith('[]')) {
+              // Create a new object with array notation
+              element = {};
+              element[refElemName + '[]'] = cachedElem[refElemName];
+            } else {
+              element = cachedElem;
+            }
+          } else {
+            element = cachedElem;
+          }
         }
         else {
           element[name] = definitions.descriptions.types[typeName];
@@ -1597,17 +1621,44 @@ WSDL.prototype.xmlToObject = function (xml, callback) {
     if (root.Envelope) {
       let body = root.Envelope.Body;
       if (body && body.Fault) {
-        let code = body.Fault.faultcode && body.Fault.faultcode.$value;
-        let string = body.Fault.faultstring && body.Fault.faultstring.$value;
-        let detail = body.Fault.detail && body.Fault.detail.$value;
+        const fault = body.Fault;
+        let code, string, actor, detail, statusCode;
 
-        code = code || body.Fault.faultcode;
-        string = string || body.Fault.faultstring;
-        detail = detail || body.Fault.detail;
+        // SOAP 1.1 Fault
+        if (fault.faultcode) {
+          code = fault.faultcode && fault.faultcode.$value || fault.faultcode;
+          string = fault.faultstring && fault.faultstring.$value || fault.faultstring;
+          actor = fault.faultactor && fault.faultactor.$value || fault.faultactor;
+          detail = fault.detail && fault.detail.$value || fault.detail;
+          statusCode = fault.statusCode;
+        }
+        // SOAP 1.2 Fault
+        else if (fault.Code) {
+          code = fault.Code.Value;
+          string = fault.Reason && fault.Reason.Text && fault.Reason.Text.$value
+            || fault.Reason && fault.Reason.Text
+            || '';
+          actor = fault.Role;
+          detail = fault.Detail;
+          statusCode = fault.statusCode;
+        }
 
-        let error: any = new Error(code + ': ' + string + (detail ? ': ' + detail : ''));
-
+        const error: any = new Error(string || code);
         error.root = root;
+        error.Fault = fault;
+        error.code = code;
+        error.string = string;
+        error.actor = actor;
+        error.detail = detail;
+        error.statusCode = statusCode || 500;
+
+        // If returnFault option is enabled, return the fault in the response instead of throwing
+        if (self.options.returnFault) {
+          debug('SOAP Fault (returnFault=true): %s', string || code);
+          return root.Envelope;
+        }
+
+        debug('SOAP Fault: %s', string || code);
         throw error;
       }
       return root.Envelope;
@@ -2001,9 +2052,15 @@ WSDL.prototype.objectToXML = function (obj, name, nsPrefix, nsURI, isFirst, xmln
                 } else {
                   name = nonSubNameSpace + name;
                 }
+                // For arrays without schema, pass namespace information as object
+                const arrayNsPrefix = {
+                  current: nonSubNameSpace || nsPrefix,
+                  parent: ns || nsPrefix
+                };
+                value = this.objectToXML(child, name, arrayNsPrefix, nsURI, false, null, null, nsContext);
+              } else {
+                value = this.objectToXML(child, name, nonSubNameSpace || nsPrefix, nsURI, false, null, null, nsContext);
               }
-
-              value = this.objectToXML(child, name, nonSubNameSpace || nsPrefix, nsURI, false, null, null, nsContext);
             }
           } else {
             value = this.objectToXML(child, name, nonSubNameSpace || nsPrefix, nsURI, false, null, null, nsContext);

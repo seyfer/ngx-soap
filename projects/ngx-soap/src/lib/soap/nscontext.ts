@@ -2,13 +2,13 @@
 
 export class NamespaceScope {
   parent: any;
-  namespaces: any;
+  namespaces: Map<string, {uri: string, prefix: string, declared: boolean}>;
   constructor(parent: any) {
     if (!(this instanceof NamespaceScope)) {
       return new NamespaceScope(parent);
     }
     this.parent = parent;
-    this.namespaces = {};  
+    this.namespaces = new Map();  
   }
 
   getNamespaceURI = function(prefix, localOnly) {
@@ -18,7 +18,7 @@ export class NamespaceScope {
       case 'xmlns':
         return 'http://www.w3.org/2000/xmlns/';
       default:
-        var nsUri = this.namespaces[prefix];
+        var nsUri = this.namespaces.get(prefix);
         /*jshint -W116 */
         if (nsUri != null) {
           return nsUri.uri;
@@ -45,7 +45,7 @@ export class NamespaceScope {
           declared: true
         };
       default:
-        var mapping = this.namespaces[prefix];
+        var mapping = this.namespaces.get(prefix);
         /*jshint -W116 */
         if (mapping != null) {
           return mapping;
@@ -64,9 +64,9 @@ export class NamespaceScope {
       case 'http://www.w3.org/2000/xmlns/':
         return 'xmlns';
       default:
-        for (var p in this.namespaces) {
-          if (this.namespaces[p].uri === nsUri) {
-            return p;
+        for (const [prefix, mapping] of this.namespaces) {
+          if (mapping.uri === nsUri) {
+            return prefix;
           }
         }
         if (!localOnly && this.parent) {
@@ -96,11 +96,11 @@ export class NamespaceContext {
       return false;
     }
     if (this.currentScope) {
-      this.currentScope.namespaces[prefix] = {
+      this.currentScope.namespaces.set(prefix, {
         uri: nsUri,
         prefix: prefix,
         declared: false
-      };
+      });
       return true;
     }
     return false;
@@ -156,11 +156,11 @@ export class NamespaceContext {
       if (mapping && mapping.uri === nsUri && mapping.declared) {
         return false;
       }
-      this.currentScope.namespaces[prefix] = {
+      this.currentScope.namespaces.set(prefix, {
         uri: nsUri,
         prefix: prefix,
         declared: true
-      };
+      });
       return true;
     }
     return false;

@@ -15,10 +15,12 @@ export interface IWsdlBaseOptions {
     ignoredNamespaces?: boolean | string[] | { namespaces?: string[]; override?: boolean; };
     ignoreBaseNameSpaces?: boolean;
     escapeXML?: boolean;
+    /** Return SOAP Faults as data instead of throwing errors (default: false) */
     returnFault?: boolean;
     handleNilAsNull?: boolean;
     wsdl_headers?: { [key: string]: any };
     wsdl_options?: { [key: string]: any };
+    namespaceArrayElements?: boolean;
 }
 
 export interface Definitions {

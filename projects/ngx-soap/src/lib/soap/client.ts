@@ -367,6 +367,16 @@ Client.prototype._invoke = function(method, args, location, options, extraHeader
     );
 
     function parseSync(body, response: HttpResponse<any>) {
+        // Handle empty or null body
+        if (!body || typeof body !== 'string' || body.trim().length === 0) {
+            debug('Received empty SOAP body');
+            if (!output) {
+                // One-way operation, no response expected
+                return { err: null, response: null, responseBody: body, header: undefined, xml };
+            }
+            return { err: null, result: {}, responseBody: body, header: undefined, xml };
+        }
+
         let obj;
         try {
             obj = self.wsdl.xmlToObject(body);

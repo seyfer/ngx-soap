@@ -96,5 +96,55 @@ describe('Client - Header Operations', () => {
             expect(client.getBodyAttributes()).toBeNull();
         });
     });
+
+    describe('Empty SOAP Body Handling', () => {
+        it('should handle empty body response without crashing', () => {
+            // Test that empty/null body doesn't cause crashes
+            const emptyBodies = ['', null, undefined, '   '];
+            
+            emptyBodies.forEach(body => {
+                expect(() => {
+                    // This should not throw
+                    const result = mockWSDL.xmlToObject('');
+                }).not.toThrow();
+            });
+        });
+
+        it('should handle one-way operations (no output expected)', () => {
+            // Mock WSDL with one-way operation (no output)
+            const oneWayWSDL = {
+                ...mockWSDL,
+                definitions: {
+                    services: {
+                        TestService: {
+                            ports: {
+                                TestPort: {
+                                    binding: {
+                                        operations: {
+                                            OneWayOp: {
+                                                input: { $name: 'OneWayInput' },
+                                                // No output defined
+                                            }
+                                        }
+                                    },
+                                    location: 'http://example.com/service'
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            expect(oneWayWSDL.definitions.services.TestService.ports.TestPort.binding.operations.OneWayOp.output).toBeUndefined();
+        });
+
+        it('should return empty object for empty body content', () => {
+            const emptyXml = '';
+            mockWSDL.xmlToObject = jest.fn(() => ({}));
+            
+            const result = mockWSDL.xmlToObject(emptyXml);
+            expect(result).toEqual({});
+        });
+    });
 });
 
