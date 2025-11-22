@@ -8,19 +8,45 @@ export interface IXmlAttribute {
 }
 
 export interface IWsdlBaseOptions {
+    /** Key for XML attributes in parsed objects (default: 'attributes') */
     attributesKey?: string;
+    /** Key for element text values in parsed objects (default: '$value') */
     valueKey?: string;
+    /** Key for raw XML in parsed objects (default: '$xml') */
     xmlKey?: string;
+    /** Override root element namespace and attributes */
     overrideRootElement?: { namespace: string; xmlnsAttributes?: IXmlAttribute[]; };
+    /** Namespaces to ignore during parsing */
     ignoredNamespaces?: boolean | string[] | { namespaces?: string[]; override?: boolean; };
+    /** Ignore base namespaces during serialization */
     ignoreBaseNameSpaces?: boolean;
+    /** Control XML escaping for special characters (default: true) */
     escapeXML?: boolean;
     /** Return SOAP Faults as data instead of throwing errors (default: false) */
     returnFault?: boolean;
+    /** Treat xsi:nil as null instead of empty object (default: false) */
     handleNilAsNull?: boolean;
+    /** Headers to include in WSDL HTTP requests */
     wsdl_headers?: { [key: string]: any };
+    /** Options for WSDL HTTP requests */
     wsdl_options?: { [key: string]: any };
+    /** Add namespace to array elements (default: false) */
     namespaceArrayElements?: boolean;
+    
+    /** Use self-closing tags for empty elements: <Tag /> instead of <Tag></Tag> (default: false) */
+    useEmptyTag?: boolean;
+    /** Preserve leading and trailing whitespace in text content (default: false) */
+    preserveWhitespace?: boolean;
+    /** Replace non-identifier characters in operation names with underscores (default: false) */
+    normalizeNames?: boolean;
+    /** Hide stack traces in error messages (default: false) */
+    suppressStack?: boolean;
+    /** Force schema xmlns usage even when not required (default: false) */
+    forceUseSchemaXmlns?: boolean;
+    /** Custom envelope key prefix (default: 'soap') */
+    envelopeKey?: string;
+    /** Override the suffix for promise-based methods (default: 'Async') */
+    overridePromiseSuffix?: string;
 }
 
 export interface Definitions {
@@ -134,14 +160,20 @@ export interface XsdTypeBase {
 
 export interface IOptions extends IWsdlBaseOptions {
     disableCache?: boolean;
+    /** Override the SOAP service endpoint address */
     endpoint?: string;
+    /** Custom envelope key prefix (default: 'soap') */
     envelopeKey?: string;
+    /** Angular HttpClient instance for HTTP requests */
     httpClient?: HttpClient;
     // request?: (options: any, callback?: (error: any, res: any, body: any) => void) => void;
     stream?: boolean;
-    // wsdl options that only work for client
+    /** Force SOAP 1.2 headers instead of SOAP 1.1 */
     forceSoap12Headers?: boolean;
+    /** Custom deserializer function */
     customDeserializer?: any;
+    /** Exchange ID for request/response tracking (auto-generated if not provided) */
+    exchangeId?: string;
     [key: string]: any;
 }
 

@@ -1203,6 +1203,15 @@ WSDL.prototype._initializeOptions = function (options) {
     this.options.namespaceArrayElements = true;
   }
 
+  // Phase 3 options
+  this.options.useEmptyTag = options.useEmptyTag !== undefined ? options.useEmptyTag : false;
+  this.options.preserveWhitespace = options.preserveWhitespace !== undefined ? options.preserveWhitespace : false;
+  this.options.normalizeNames = options.normalizeNames !== undefined ? options.normalizeNames : false;
+  this.options.suppressStack = options.suppressStack !== undefined ? options.suppressStack : false;
+  this.options.forceUseSchemaXmlns = options.forceUseSchemaXmlns !== undefined ? options.forceUseSchemaXmlns : false;
+  this.options.envelopeKey = options.envelopeKey || 'soap';
+  this.options.overridePromiseSuffix = options.overridePromiseSuffix || 'Async';
+
   // Allow any request headers to keep passing through
   this.options.wsdl_headers = options.wsdl_headers;
   this.options.wsdl_options = options.wsdl_options;
@@ -1229,8 +1238,6 @@ WSDL.prototype._initializeOptions = function (options) {
   if (options.overrideRootElement !== undefined) {
     this.options.overrideRootElement = options.overrideRootElement;
   }
-
-  this.options.useEmptyTag = !!options.useEmptyTag;
 };
 
 WSDL.prototype.onReady = function (callback) {

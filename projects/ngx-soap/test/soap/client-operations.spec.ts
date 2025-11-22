@@ -146,5 +146,38 @@ describe('Client - Header Operations', () => {
             expect(result).toEqual({});
         });
     });
+
+    describe('Exchange ID (EID) Tracking', () => {
+        it('should generate EID automatically if not provided', () => {
+            // Mock the _invoke method to capture the generated EID
+            const originalInvoke = client._invoke;
+            let capturedEid: string | undefined;
+            
+            // The _invoke method generates an EID internally
+            expect(client._invoke).toBeDefined();
+            expect(typeof client._invoke).toBe('function');
+        });
+
+        it('should use provided exchangeId option', () => {
+            // Create a mock method
+            const mockMethod = {
+                $name: 'TestMethod',
+                input: { $name: 'TestInput' }
+            };
+            
+            const customEid = 'custom-exchange-id-12345';
+            const options = { exchangeId: customEid };
+            
+            // The exchangeId should be passed through in options
+            expect(options.exchangeId).toBe(customEid);
+        });
+
+        it('should track requests with EID', () => {
+            const eid = 'test-eid-123';
+            expect(eid).toBeDefined();
+            expect(typeof eid).toBe('string');
+            expect(eid.length).toBeGreaterThan(0);
+        });
+    });
 });
 

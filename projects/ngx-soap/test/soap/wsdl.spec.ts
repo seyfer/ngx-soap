@@ -369,4 +369,60 @@ describe('WSDL - Core Functionality', () => {
             }
         });
     });
+
+    describe('Configuration Options', () => {
+        it('should initialize with useEmptyTag option', () => {
+            const wsdlWithOptions = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com', { useEmptyTag: true });
+            expect(wsdlWithOptions.options.useEmptyTag).toBe(true);
+        });
+
+        it('should initialize with preserveWhitespace option', () => {
+            const wsdlWithOptions = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com', { preserveWhitespace: true });
+            expect(wsdlWithOptions.options.preserveWhitespace).toBe(true);
+        });
+
+        it('should initialize with normalizeNames option', () => {
+            const wsdlWithOptions = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com', { normalizeNames: true });
+            expect(wsdlWithOptions.options.normalizeNames).toBe(true);
+        });
+
+        it('should initialize with suppressStack option', () => {
+            const wsdlWithOptions = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com', { suppressStack: true });
+            expect(wsdlWithOptions.options.suppressStack).toBe(true);
+        });
+
+        it('should initialize with forceUseSchemaXmlns option', () => {
+            const wsdlWithOptions = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com', { forceUseSchemaXmlns: true });
+            expect(wsdlWithOptions.options.forceUseSchemaXmlns).toBe(true);
+        });
+
+        it('should initialize with custom envelopeKey', () => {
+            const wsdlWithOptions = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com', { envelopeKey: 'soap12' });
+            expect(wsdlWithOptions.options.envelopeKey).toBe('soap12');
+        });
+
+        it('should use default envelopeKey when not provided', () => {
+            const wsdlWithDefaults = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com', {});
+            expect(wsdlWithDefaults.options.envelopeKey).toBe('soap');
+        });
+
+        it('should initialize with custom overridePromiseSuffix', () => {
+            const wsdlWithOptions = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com', { overridePromiseSuffix: 'Promise' });
+            expect(wsdlWithOptions.options.overridePromiseSuffix).toBe('Promise');
+        });
+
+        it('should use default overridePromiseSuffix when not provided', () => {
+            const wsdlWithDefaults = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com', {});
+            expect(wsdlWithDefaults.options.overridePromiseSuffix).toBe('Async');
+        });
+
+        it('should default boolean options to false when not provided', () => {
+            const wsdlWithDefaults = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com', {});
+            expect(wsdlWithDefaults.options.useEmptyTag).toBe(false);
+            expect(wsdlWithDefaults.options.preserveWhitespace).toBe(false);
+            expect(wsdlWithDefaults.options.normalizeNames).toBe(false);
+            expect(wsdlWithDefaults.options.suppressStack).toBe(false);
+            expect(wsdlWithDefaults.options.forceUseSchemaXmlns).toBe(false);
+        });
+    });
 });

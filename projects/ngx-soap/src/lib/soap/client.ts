@@ -189,7 +189,10 @@ Client.prototype._defineMethod = function(method, location) {
 };
 
 Client.prototype._invoke = function(method, args, location, options, extraHeaders): Observable<any> {
-    debug('Invoking SOAP method: %s', method.$name);
+    // Generate or use provided exchange ID for request tracking
+    const eid = options.exchangeId || generateUUID();
+    debug('Invoking SOAP method: %s (EID: %s)', method.$name, eid);
+    
     let self = this,
         name = method.$name,
         input = method.input,
