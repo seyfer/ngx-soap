@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.10.0
+
+- Release preparation for Angular 10
+- Package renaming finalization (ngx-soap to ngx-soap-next)
+- Build and dependency fixes
+
 ## 0.5.0-beta.7
 
 Client events have been removed due to problems with Angular prod bundle. See issue [#29](https://github.com/lula/ngx-soap/issues/29).
