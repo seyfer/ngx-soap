@@ -7,6 +7,33 @@ export interface IXmlAttribute {
     value: string;
 }
 
+/**
+ * Custom WSDL cache interface
+ * Allows implementing custom caching strategies for WSDL documents
+ */
+export interface IWSDLCache {
+    /**
+     * Check if a WSDL is cached
+     * @param key - Cache key (typically the WSDL URL)
+     * @returns true if cached, false otherwise
+     */
+    has(key: string): boolean;
+    
+    /**
+     * Get a cached WSDL
+     * @param key - Cache key (typically the WSDL URL)
+     * @returns Cached WSDL definition or undefined if not found
+     */
+    get(key: string): any;
+    
+    /**
+     * Store a WSDL in cache
+     * @param key - Cache key (typically the WSDL URL)
+     * @param value - WSDL definition to cache
+     */
+    set(key: string, value: any): void;
+}
+
 export interface IWsdlBaseOptions {
     /** Key for XML attributes in parsed objects (default: 'attributes') */
     attributesKey?: string;
@@ -16,6 +43,12 @@ export interface IWsdlBaseOptions {
     xmlKey?: string;
     /** Override root element namespace and attributes */
     overrideRootElement?: { namespace: string; xmlnsAttributes?: IXmlAttribute[]; };
+    /** 
+     * Override element keys during WSDL parsing
+     * Allows renaming elements to avoid conflicts or match expected names
+     * @example { overrideElementKey: { 'OldElementName': 'NewElementName' } }
+     */
+    overrideElementKey?: { [key: string]: string };
     /** Namespaces to ignore during parsing */
     ignoredNamespaces?: boolean | string[] | { namespaces?: string[]; override?: boolean; };
     /** Ignore base namespaces during serialization */
@@ -160,10 +193,24 @@ export interface XsdTypeBase {
 
 export interface IOptions extends IWsdlBaseOptions {
     disableCache?: boolean;
+    /**
+     * Custom WSDL cache implementation
+     * Allows providing a custom cache strategy for WSDL documents
+     * @example { wsdlCache: new MyCustomCache() }
+     */
+    wsdlCache?: IWSDLCache;
     /** Override the SOAP service endpoint address */
     endpoint?: string;
     /** Custom envelope key prefix (default: 'soap') */
     envelopeKey?: string;
+    /**
+     * Custom SOAP envelope namespace URL
+     * Overrides the default SOAP 1.1 envelope URL
+     * Will not be used when forceSoap12Headers is true
+     * @default 'http://schemas.xmlsoap.org/soap/envelope/'
+     * @example { envelopeSoapUrl: 'http://schemas.xmlsoap.org/soap/envelope/' }
+     */
+    envelopeSoapUrl?: string;
     /** Angular HttpClient instance for HTTP requests */
     httpClient?: HttpClient;
     // request?: (options: any, callback?: (error: any, res: any, body: any) => void) => void;
@@ -186,6 +233,14 @@ export interface IOptions extends IWsdlBaseOptions {
      * @example { portName: 'MyServicePort' }
      */
     portName?: string;
+    /**
+     * Response encoding charset
+     * In browser environments, encoding is handled automatically by XMLHttpRequest
+     * This option is provided for API compatibility with node-soap
+     * @default 'utf-8'
+     * @example { encoding: 'latin1' }
+     */
+    encoding?: string;
     [key: string]: any;
 }
 

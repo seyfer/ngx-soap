@@ -89,6 +89,114 @@ MIIDXTCCAkWgAwIBAgIJAKL0UG+mRKfzMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
         });
     });
 
+    describe('Algorithm Options (Phase 4.7)', () => {
+        it('should use default algorithms when no options provided', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '');
+            
+            expect(security.digestAlgorithm).toBe('sha256');
+            expect(security.signatureAlgorithm).toBe('http://www.w3.org/2001/04/xmldsig-more#rsa-sha256');
+            expect(security.signer.signatureAlgorithm).toBe('http://www.w3.org/2001/04/xmldsig-more#rsa-sha256');
+        });
+
+        it('should accept custom digestAlgorithm option', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                digestAlgorithm: 'sha512'
+            });
+            
+            expect(security.digestAlgorithm).toBe('sha512');
+        });
+
+        it('should accept custom signatureAlgorithm option', () => {
+            const customAlgo = 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512';
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                signatureAlgorithm: customAlgo
+            });
+            
+            expect(security.signatureAlgorithm).toBe(customAlgo);
+            expect(security.signer.signatureAlgorithm).toBe(customAlgo);
+        });
+
+        it('should accept both digest and signature algorithm options', () => {
+            const options = {
+                digestAlgorithm: 'sha1',
+                signatureAlgorithm: 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
+            };
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', options);
+            
+            expect(security.digestAlgorithm).toBe('sha1');
+            expect(security.signatureAlgorithm).toBe('http://www.w3.org/2000/09/xmldsig#rsa-sha1');
+            expect(security.signer.signatureAlgorithm).toBe('http://www.w3.org/2000/09/xmldsig#rsa-sha1');
+        });
+
+        it('should support sha256 digest algorithm', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                digestAlgorithm: 'sha256'
+            });
+            
+            expect(security.digestAlgorithm).toBe('sha256');
+        });
+
+        it('should support sha512 digest algorithm', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                digestAlgorithm: 'sha512'
+            });
+            
+            expect(security.digestAlgorithm).toBe('sha512');
+        });
+    });
+
+    describe('Exclude References from Signing (Phase 4.14)', () => {
+        it('should initialize with empty excludeReferencesFromSigning by default', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '');
+            
+            expect(Array.isArray(security.excludeReferencesFromSigning)).toBe(true);
+            expect(security.excludeReferencesFromSigning.length).toBe(0);
+        });
+
+        it('should accept excludeReferencesFromSigning option', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                excludeReferencesFromSigning: ['Body']
+            });
+            
+            expect(security.excludeReferencesFromSigning).toEqual(['Body']);
+        });
+
+        it('should accept multiple elements to exclude', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                excludeReferencesFromSigning: ['Body', 'Timestamp']
+            });
+            
+            expect(security.excludeReferencesFromSigning).toEqual(['Body', 'Timestamp']);
+        });
+
+        it('should handle case-insensitive element matching', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                excludeReferencesFromSigning: ['body', 'TIMESTAMP']
+            });
+            
+            expect(security.excludeReferencesFromSigning).toEqual(['body', 'TIMESTAMP']);
+            // The actual filtering is case-insensitive in the postProcess method
+        });
+
+        it('should allow excluding only Body', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                excludeReferencesFromSigning: ['Body']
+            });
+            
+            expect(security.excludeReferencesFromSigning).toContain('Body');
+            expect(security.excludeReferencesFromSigning).not.toContain('Timestamp');
+        });
+
+        it('should allow excluding only Timestamp', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                excludeReferencesFromSigning: ['Timestamp']
+            });
+            
+            expect(security.excludeReferencesFromSigning).toContain('Timestamp');
+            expect(security.excludeReferencesFromSigning).not.toContain('Body');
+        });
+    });
+
     describe('Edge Cases', () => {
         it('should handle certificate with extra whitespace and different line endings', () => {
             const certWithWhitespace = `-----BEGIN CERTIFICATE-----

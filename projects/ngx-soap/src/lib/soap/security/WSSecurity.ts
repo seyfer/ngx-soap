@@ -9,6 +9,26 @@ import { passwordDigest } from '../utils';
 
 var validPasswordTypes = ['PasswordDigest', 'PasswordText'];
 
+/**
+ * Generate a UUID using native crypto API with fallback for non-secure contexts
+ * Phase 4B - Task 4.9: Dynamic timestamp IDs
+ */
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback for non-secure contexts (HTTP)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function generateId() {
+  return generateUUID().replace(/-/gm, '');
+}
+
 export function WSSecurity(username, password, options) {
   options = options || {};
   this._username = username;
@@ -57,7 +77,9 @@ WSSecurity.prototype.toXML = function() {
   var timeStampXml = '';
   if (this._hasTimeStamp) {
     var expires = getDate( new Date(now.getTime() + (1000 * 600)) );
-    timeStampXml = "<wsu:Timestamp wsu:Id=\"Timestamp-"+created+"\">" +
+    // Phase 4B - Task 4.9: Use unique ID instead of timestamp for better uniqueness
+    var timestampId = 'Timestamp-' + generateId();
+    timeStampXml = "<wsu:Timestamp wsu:Id=\"" + timestampId + "\">" +
       "<wsu:Created>"+created+"</wsu:Created>" +
       "<wsu:Expires>"+expires+"</wsu:Expires>" +
       "</wsu:Timestamp>";
@@ -81,9 +103,11 @@ WSSecurity.prototype.toXML = function() {
       "<wsse:Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">" + nonce + "</wsse:Nonce>";
   }
 
+  // Phase 4B - Task 4.10: Add proper spacing after xmlns:wsu to prevent xmldom warning
   return "<wsse:Security " + (this._actor ? "soap:actor=\"" + this._actor + "\" " : "") +
     (this._mustUnderstand ? "soap:mustUnderstand=\"1\" " : "") +
-    "xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">" +
+    "xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" " +
+    "xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">" +
     timeStampXml +
     "<wsse:UsernameToken xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" wsu:Id=\"SecurityToken-" + created + "\">" +
     "<wsse:Username>" + this._username + "</wsse:Username>" +

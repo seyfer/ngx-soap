@@ -861,6 +861,13 @@ SimpleContentElement.prototype.description = function (definitions, xmlns) {
 ElementElement.prototype.description = function (definitions, xmlns) {
   let element = {},
     name = this.$name;
+  
+  // Phase 4B - Task 4.5: Apply element key override if configured
+  if (definitions.options && definitions.options.overrideElementKey && definitions.options.overrideElementKey[name]) {
+    name = definitions.options.overrideElementKey[name];
+    debug('Element key overridden: %s -> %s', this.$name, name);
+  }
+  
   let isMany = !this.$maxOccurs ? false : (isNaN(this.$maxOccurs) ? (this.$maxOccurs === 'unbounded') : (this.$maxOccurs > 1));
   if (this.$minOccurs !== this.$maxOccurs && isMany) {
     name += '[]';
@@ -1224,6 +1231,18 @@ WSDL.prototype._initializeOptions = function (options) {
   // Phase 4A - Task 4.3: Multi-service/multi-port support
   this.options.serviceName = options.serviceName;
   this.options.portName = options.portName;
+
+  // Phase 4B - Task 4.5: Element key override support
+  this.options.overrideElementKey = options.overrideElementKey;
+
+  // Phase 4B - Task 4.6: Custom SOAP envelope URL support
+  this.options.envelopeSoapUrl = options.envelopeSoapUrl;
+
+  // Phase 4C - Task 4.15: Response encoding support
+  this.options.encoding = options.encoding || 'utf-8';
+
+  // Phase 4C - Task 4.16: Custom WSDL cache support
+  this.options.wsdlCache = options.wsdlCache;
 
   // Allow any request headers to keep passing through
   this.options.wsdl_headers = options.wsdl_headers;

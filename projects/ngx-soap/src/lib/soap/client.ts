@@ -249,6 +249,11 @@ Client.prototype._invoke = function(method, args, location, options, extraHeader
         },
         xmlnsSoap = 'xmlns:' + envelopeKey + '="http://schemas.xmlsoap.org/soap/envelope/"';
 
+    // Phase 4B - Task 4.6: Support custom SOAP envelope URL
+    if (this.wsdl.options.envelopeSoapUrl && !this.wsdl.options.forceSoap12Headers) {
+        xmlnsSoap = 'xmlns:' + envelopeKey + '="' + this.wsdl.options.envelopeSoapUrl + '"';
+    }
+
     if (this.wsdl.options.forceSoap12Headers) {
         headers['Content-Type'] = 'application/soap+xml; charset=utf-8';
         xmlnsSoap = 'xmlns:' + envelopeKey + '="http://www.w3.org/2003/05/soap-envelope"';

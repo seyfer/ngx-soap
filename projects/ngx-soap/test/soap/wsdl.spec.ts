@@ -984,5 +984,122 @@ describe('WSDL - Core Functionality', () => {
                 });
             });
         });
+
+        describe('Task 4.5: overrideElementKey Option', () => {
+            it('should store overrideElementKey option correctly', () => {
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
+                    overrideElementKey: { 'OldName': 'NewName' }
+                });
+                expect(wsdl.options.overrideElementKey).toBeDefined();
+                expect(wsdl.options.overrideElementKey['OldName']).toBe('NewName');
+            });
+
+            it('should allow multiple element key overrides', () => {
+                const overrides = {
+                    'Element1': 'RenamedElement1',
+                    'Element2': 'RenamedElement2',
+                    'Element3': 'RenamedElement3'
+                };
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
+                    overrideElementKey: overrides
+                });
+                expect(wsdl.options.overrideElementKey).toEqual(overrides);
+            });
+
+            it('should have undefined overrideElementKey when not specified', () => {
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', {});
+                expect(wsdl.options.overrideElementKey).toBeUndefined();
+            });
+        });
+
+        describe('Task 4.6: envelopeSoapUrl Option', () => {
+            it('should store envelopeSoapUrl option correctly', () => {
+                const customUrl = 'http://custom.soap.namespace.com/envelope/';
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
+                    envelopeSoapUrl: customUrl
+                });
+                expect(wsdl.options.envelopeSoapUrl).toBe(customUrl);
+            });
+
+            it('should have undefined envelopeSoapUrl when not specified', () => {
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', {});
+                expect(wsdl.options.envelopeSoapUrl).toBeUndefined();
+            });
+
+            it('should allow standard SOAP envelope URLs', () => {
+                const soap11Url = 'http://schemas.xmlsoap.org/soap/envelope/';
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
+                    envelopeSoapUrl: soap11Url
+                });
+                expect(wsdl.options.envelopeSoapUrl).toBe(soap11Url);
+            });
+        });
+
+        describe('Task 4.15: encoding Option (Phase 4C)', () => {
+            it('should use default encoding utf-8 when not specified', () => {
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', {});
+                expect(wsdl.options.encoding).toBe('utf-8');
+            });
+
+            it('should store custom encoding option', () => {
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
+                    encoding: 'latin1'
+                });
+                expect(wsdl.options.encoding).toBe('latin1');
+            });
+
+            it('should support various encoding formats', () => {
+                const encodings = ['utf-8', 'utf-16', 'latin1', 'iso-8859-1', 'ascii'];
+                
+                encodings.forEach(encoding => {
+                    const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
+                        encoding
+                    });
+                    expect(wsdl.options.encoding).toBe(encoding);
+                });
+            });
+        });
+
+        describe('Task 4.16: wsdlCache Option (Phase 4C)', () => {
+            it('should accept custom wsdlCache implementation', () => {
+                // Create a simple custom cache
+                const customCache = {
+                    has: jest.fn((key: string) => false),
+                    get: jest.fn((key: string) => undefined),
+                    set: jest.fn((key: string, value: any) => {})
+                };
+
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
+                    wsdlCache: customCache
+                });
+                
+                expect(wsdl.options.wsdlCache).toBe(customCache);
+                expect(wsdl.options.wsdlCache.has).toBeDefined();
+                expect(wsdl.options.wsdlCache.get).toBeDefined();
+                expect(wsdl.options.wsdlCache.set).toBeDefined();
+            });
+
+            it('should have undefined wsdlCache when not specified', () => {
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', {});
+                expect(wsdl.options.wsdlCache).toBeUndefined();
+            });
+
+            it('should support IWSDLCache interface methods', () => {
+                const cache = {
+                    has: (key: string) => key === 'test',
+                    get: (key: string) => key === 'test' ? 'value' : undefined,
+                    set: (key: string, value: any) => {}
+                };
+
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
+                    wsdlCache: cache
+                });
+                
+                expect(wsdl.options.wsdlCache.has('test')).toBe(true);
+                expect(wsdl.options.wsdlCache.has('other')).toBe(false);
+                expect(wsdl.options.wsdlCache.get('test')).toBe('value');
+                expect(wsdl.options.wsdlCache.get('other')).toBeUndefined();
+            });
+        });
     });
 });

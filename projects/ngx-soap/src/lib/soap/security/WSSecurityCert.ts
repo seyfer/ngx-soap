@@ -51,10 +51,20 @@ function generateId() {
   return generateUUID().replace(/-/gm, '');
 }
 
-export function WSSecurityCert(privatePEM, publicP12PEM, password) {
+export function WSSecurityCert(privatePEM, publicP12PEM, password, options?) {
+  options = options || {};
+  
   this.publicP12PEM = publicP12PEM.toString().replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/(\r\n|\n|\r)/gm, '');
 
+  // Store algorithm options
+  this.digestAlgorithm = options.digestAlgorithm || 'sha256';
+  this.signatureAlgorithm = options.signatureAlgorithm || 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256';
+  
+  // Store reference exclusion options
+  this.excludeReferencesFromSigning = options.excludeReferencesFromSigning || [];
+
   this.signer = new SignedXml();
+  this.signer.signatureAlgorithm = this.signatureAlgorithm;
   this.signer.signingKey = {
     key: privatePEM,
     passphrase: password
@@ -112,8 +122,22 @@ WSSecurityCert.prototype.postProcess = function (xml, envelopeKey) {
   var references = ["http://www.w3.org/2000/09/xmldsig#enveloped-signature",
     "http://www.w3.org/2001/10/xml-exc-c14n#"];
 
-  this.signer.addReference("//*[name(.)='" + envelopeKey + ":Body']", references);
-  this.signer.addReference("//*[name(.)='wsse:Security']/*[local-name(.)='Timestamp']", references);
+  // Add references conditionally based on excludeReferencesFromSigning option
+  const shouldExclude = (refName) => {
+    return this.excludeReferencesFromSigning && 
+           this.excludeReferencesFromSigning.some(excluded => 
+             refName.toLowerCase().includes(excluded.toLowerCase())
+           );
+  };
+
+  // Use the configured digest algorithm for references
+  if (!shouldExclude('Body')) {
+    this.signer.addReference("//*[name(.)='" + envelopeKey + ":Body']", references, this.digestAlgorithm);
+  }
+  
+  if (!shouldExclude('Timestamp')) {
+    this.signer.addReference("//*[name(.)='wsse:Security']/*[local-name(.)='Timestamp']", references, this.digestAlgorithm);
+  }
 
   this.signer.computeSignature(xmlWithSec);
 

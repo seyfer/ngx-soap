@@ -26,8 +26,12 @@ export function WSSecurityCertWithToken(
 ) {
   options = options || {};
   
-  // Initialize certificate security
-  this.cert = new (WSSecurityCert as any)(privatePEM, publicP12PEM, password);
+  // Initialize certificate security with algorithm and exclusion options
+  this.cert = new (WSSecurityCert as any)(privatePEM, publicP12PEM, password, {
+    digestAlgorithm: options.digestAlgorithm,
+    signatureAlgorithm: options.signatureAlgorithm,
+    excludeReferencesFromSigning: options.excludeReferencesFromSigning
+  });
   
   // Initialize username token security if credentials provided
   if (options.username && options.password) {
