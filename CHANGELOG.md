@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.11.0
+
+- Updated to Angular 11 compatibility
+- Updated all @angular packages to version 11
+- Fixed build configuration
+- README updates
+
 ## 0.5.0-beta.7
 
 Client events have been removed due to problems with Angular prod bundle. See issue [#29](https://github.com/lula/ngx-soap/issues/29).
