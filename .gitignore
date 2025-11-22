@@ -12,3 +12,4 @@ dist
 spec/out
 .angular/cache
 projects/ngx-soap/package-lock.json
+node-soap/
