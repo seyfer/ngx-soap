@@ -132,8 +132,24 @@ Client.prototype.setSOAPAction = function(SOAPAction) {
 Client.prototype._initializeServices = function(endpoint) {
     const definitions = this.wsdl.definitions,
         services = definitions.services;
-    for (const name in services) {
-        this[name] = this._defineService(services[name], endpoint);
+    
+    // Support selecting specific service (Phase 4A - Task 4.3)
+    const selectedServiceName = this.wsdl.options.serviceName;
+    
+    if (selectedServiceName) {
+        // Initialize only the selected service
+        if (services[selectedServiceName]) {
+            this[selectedServiceName] = this._defineService(services[selectedServiceName], endpoint);
+            debug('Initialized selected service: %s', selectedServiceName);
+        } else {
+            debug('Warning: Selected service "%s" not found in WSDL. Available services: %s', 
+                selectedServiceName, Object.keys(services).join(', '));
+        }
+    } else {
+        // Initialize all services (backward compatible)
+        for (const name in services) {
+            this[name] = this._defineService(services[name], endpoint);
+        }
     }
 };
 
@@ -143,6 +159,11 @@ Client.prototype._initializeOptions = function(options) {
     this.wsdl.options.attributesKey = options.attributesKey || 'attributes';
     this.wsdl.options.envelopeKey = options.envelopeKey || 'soap';
     this.wsdl.options.preserveWhitespace = !!options.preserveWhitespace;
+    
+    // Phase 4A - Task 4.3: Support selecting specific service/port
+    this.wsdl.options.serviceName = options.serviceName;
+    this.wsdl.options.portName = options.portName;
+    
     if (options.ignoredNamespaces !== undefined) {
         if (options.ignoredNamespaces.override !== undefined) {
             if (options.ignoredNamespaces.override === true) {
@@ -161,8 +182,24 @@ Client.prototype._initializeOptions = function(options) {
 Client.prototype._defineService = function(service, endpoint) {
     const ports = service.ports,
         def = {};
-    for (const name in ports) {
-        def[name] = this._definePort(ports[name], endpoint ? endpoint : ports[name].location);
+    
+    // Support selecting specific port (Phase 4A - Task 4.3)
+    const selectedPortName = this.wsdl.options.portName;
+    
+    if (selectedPortName) {
+        // Initialize only the selected port
+        if (ports[selectedPortName]) {
+            def[selectedPortName] = this._definePort(ports[selectedPortName], endpoint ? endpoint : ports[selectedPortName].location);
+            debug('Initialized selected port: %s', selectedPortName);
+        } else {
+            debug('Warning: Selected port "%s" not found in service. Available ports: %s', 
+                selectedPortName, Object.keys(ports).join(', '));
+        }
+    } else {
+        // Initialize all ports (backward compatible)
+        for (const name in ports) {
+            def[name] = this._definePort(ports[name], endpoint ? endpoint : ports[name].location);
+        }
     }
     return def;
 };

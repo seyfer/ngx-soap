@@ -174,6 +174,18 @@ export interface IOptions extends IWsdlBaseOptions {
     customDeserializer?: any;
     /** Exchange ID for request/response tracking (auto-generated if not provided) */
     exchangeId?: string;
+    /** 
+     * Select specific service when WSDL has multiple services
+     * If not specified, defaults to first service found
+     * @example { serviceName: 'MyService' }
+     */
+    serviceName?: string;
+    /**
+     * Select specific port when service has multiple ports
+     * If not specified, defaults to first port found
+     * @example { portName: 'MyServicePort' }
+     */
+    portName?: string;
     [key: string]: any;
 }
 

@@ -425,4 +425,564 @@ describe('WSDL - Core Functionality', () => {
             expect(wsdlWithDefaults.options.forceUseSchemaXmlns).toBe(false);
         });
     });
+
+    describe('Phase 4A Bug Fixes', () => {
+        describe('Task 4.1: Handle Missing Message Definitions', () => {
+            it('should handle WSDL with missing message definitions gracefully', () => {
+                const wsdlWithMissingMessage = `<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+             xmlns:tns="http://example.com/test" 
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             targetNamespace="http://example.com/test" 
+             name="TestService">
+  
+  <types>
+    <xsd:schema targetNamespace="http://example.com/test">
+      <xsd:element name="TestRequest" type="xsd:string"/>
+      <xsd:element name="TestResponse" type="xsd:string"/>
+    </xsd:schema>
+  </types>
+  
+  <!-- Message for request is defined, but response message is missing -->
+  <message name="TestRequestMessage">
+    <part name="parameters" element="tns:TestRequest"/>
+  </message>
+  <!-- TestResponseMessage is NOT defined - this should be handled gracefully -->
+  
+  <portType name="TestPortType">
+    <operation name="TestOperation">
+      <input message="tns:TestRequestMessage"/>
+      <output message="tns:TestResponseMessage"/>
+    </operation>
+  </portType>
+  
+  <binding name="TestBinding" type="tns:TestPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="TestOperation">
+      <soap:operation soapAction="TestOperation"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+  </binding>
+  
+  <service name="TestService">
+    <port name="TestPort" binding="tns:TestBinding">
+      <soap:address location="http://example.com/test"/>
+    </port>
+  </service>
+</definitions>`;
+                
+                // Should not throw an error
+                expect(() => {
+                    const wsdl = new (WSDL as any)(wsdlWithMissingMessage, 'http://example.com/test.wsdl', {});
+                }).not.toThrow();
+            });
+
+            it('should create valid WSDL even with partial message definitions', (done) => {
+                const wsdlWithPartialMessages = `<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+             xmlns:tns="http://example.com/test" 
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             targetNamespace="http://example.com/test" 
+             name="TestService">
+  
+  <types>
+    <xsd:schema targetNamespace="http://example.com/test">
+      <xsd:element name="ValidRequest" type="xsd:string"/>
+      <xsd:element name="ValidResponse" type="xsd:string"/>
+    </xsd:schema>
+  </types>
+  
+  <message name="ValidRequestMessage">
+    <part name="parameters" element="tns:ValidRequest"/>
+  </message>
+  <message name="ValidResponseMessage">
+    <part name="parameters" element="tns:ValidResponse"/>
+  </message>
+  
+  <portType name="TestPortType">
+    <operation name="ValidOperation">
+      <input message="tns:ValidRequestMessage"/>
+      <output message="tns:ValidResponseMessage"/>
+    </operation>
+    <operation name="InvalidOperation">
+      <input message="tns:UndefinedMessage"/>
+    </operation>
+  </portType>
+  
+  <binding name="TestBinding" type="tns:TestPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="ValidOperation">
+      <soap:operation soapAction="ValidOperation"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+  </binding>
+  
+  <service name="TestService">
+    <port name="TestPort" binding="tns:TestBinding">
+      <soap:address location="http://example.com/test"/>
+    </port>
+  </service>
+</definitions>`;
+                
+                const wsdl = new (WSDL as any)(wsdlWithPartialMessages, 'http://example.com/test.wsdl', {});
+                
+                // WSDL should be created successfully
+                expect(wsdl).toBeDefined();
+                
+                // Wait for WSDL to finish processing (it's async)
+                wsdl.onReady((err: Error) => {
+                    expect(err).toBeFalsy();
+                    expect(wsdl.definitions).toBeDefined();
+                    expect(wsdl.services).toBeDefined();
+                    done();
+                });
+            });
+
+            it('should continue processing valid operations despite missing messages', (done) => {
+                const wsdlMixedMessages = `<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+             xmlns:tns="http://example.com/test" 
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             targetNamespace="http://example.com/test">
+  
+  <types>
+    <xsd:schema targetNamespace="http://example.com/test">
+      <xsd:element name="GoodRequest" type="xsd:string"/>
+      <xsd:element name="GoodResponse" type="xsd:string"/>
+    </xsd:schema>
+  </types>
+  
+  <message name="GoodRequestMessage">
+    <part name="parameters" element="tns:GoodRequest"/>
+  </message>
+  <message name="GoodResponseMessage">
+    <part name="parameters" element="tns:GoodResponse"/>
+  </message>
+  
+  <portType name="TestPortType">
+    <operation name="GoodOperation">
+      <input message="tns:GoodRequestMessage"/>
+      <output message="tns:GoodResponseMessage"/>
+    </operation>
+    <operation name="BadOperation">
+      <input message="tns:MissingMessage"/>
+    </operation>
+  </portType>
+  
+  <binding name="TestBinding" type="tns:TestPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="GoodOperation">
+      <soap:operation soapAction="GoodOperation"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+  </binding>
+  
+  <service name="TestService">
+    <port name="TestPort" binding="tns:TestBinding">
+      <soap:address location="http://example.com/test"/>
+    </port>
+  </service>
+</definitions>`;
+                
+                const wsdl = new (WSDL as any)(wsdlMixedMessages, 'http://example.com/test.wsdl', {});
+                
+                // WSDL should process without throwing
+                expect(wsdl).toBeDefined();
+                
+                // Wait for WSDL processing and verify valid operations are available
+                wsdl.onReady((err: Error) => {
+                    expect(err).toBeFalsy();
+                    expect(wsdl.services).toBeDefined();
+                    expect(wsdl.services.TestService).toBeDefined();
+                    done();
+                });
+            });
+        });
+
+        describe('Task 4.2: Prevent $type Mutation', () => {
+            it('should handle multiple sequential objectToDocumentXML calls without schema corruption', (done) => {
+                const wsdlXml = `<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+             xmlns:tns="http://example.com/test" 
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             targetNamespace="http://example.com/test">
+  
+  <types>
+    <xsd:schema targetNamespace="http://example.com/test">
+      <xsd:complexType name="PersonType">
+        <xsd:sequence>
+          <xsd:element name="name" type="xsd:string"/>
+          <xsd:element name="age" type="xsd:int"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="PersonRequest" type="tns:PersonType"/>
+      <xsd:element name="PersonResponse" type="tns:PersonType"/>
+    </xsd:schema>
+  </types>
+  
+  <message name="PersonRequestMessage">
+    <part name="parameters" element="tns:PersonRequest"/>
+  </message>
+  <message name="PersonResponseMessage">
+    <part name="parameters" element="tns:PersonResponse"/>
+  </message>
+  
+  <portType name="PersonPortType">
+    <operation name="GetPerson">
+      <input message="tns:PersonRequestMessage"/>
+      <output message="tns:PersonResponseMessage"/>
+    </operation>
+  </portType>
+  
+  <binding name="PersonBinding" type="tns:PersonPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="GetPerson">
+      <soap:operation soapAction="GetPerson"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+  </binding>
+  
+  <service name="PersonService">
+    <port name="PersonPort" binding="tns:PersonBinding">
+      <soap:address location="http://example.com/person"/>
+    </port>
+  </service>
+</definitions>`;
+                
+                const wsdl = new (WSDL as any)(wsdlXml, 'http://example.com/test.wsdl', {});
+                
+                wsdl.onReady((err: Error) => {
+                    expect(err).toBeFalsy();
+                    
+                    // Make multiple calls with the same data
+                    const testData = { name: 'John', age: 30 };
+                    
+                    const xml1 = wsdl.objectToDocumentXML('PersonRequest', testData, 'tns', 'http://example.com/test', 'tns:PersonType');
+                    const xml2 = wsdl.objectToDocumentXML('PersonRequest', testData, 'tns', 'http://example.com/test', 'tns:PersonType');
+                    
+                    // Both calls should produce the same XML (schema not corrupted)
+                    expect(xml1).toBe(xml2);
+                    expect(xml1).toContain('<name>John</name>');
+                    expect(xml1).toContain('<age>30</age>');
+                    done();
+                });
+            });
+
+            it('should not mutate original schema objects when processing with base types', (done) => {
+                const wsdlXml = `<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+             xmlns:tns="http://example.com/test" 
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             targetNamespace="http://example.com/test">
+  
+  <types>
+    <xsd:schema targetNamespace="http://example.com/test">
+      <xsd:complexType name="BaseType">
+        <xsd:sequence>
+          <xsd:element name="baseField" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ExtendedType">
+        <xsd:complexContent>
+          <xsd:extension base="tns:BaseType">
+            <xsd:sequence>
+              <xsd:element name="extraField" type="xsd:string"/>
+            </xsd:sequence>
+          </xsd:extension>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:element name="Request" type="tns:ExtendedType"/>
+    </xsd:schema>
+  </types>
+  
+  <message name="RequestMessage">
+    <part name="parameters" element="tns:Request"/>
+  </message>
+  
+  <portType name="TestPortType">
+    <operation name="TestOp">
+      <input message="tns:RequestMessage"/>
+    </operation>
+  </portType>
+  
+  <binding name="TestBinding" type="tns:TestPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="TestOp">
+      <soap:operation soapAction="TestOp"/>
+      <input><soap:body use="literal"/></input>
+    </operation>
+  </binding>
+  
+  <service name="TestService">
+    <port name="TestPort" binding="tns:TestBinding">
+      <soap:address location="http://example.com/test"/>
+    </port>
+  </service>
+</definitions>`;
+                
+                const wsdl = new (WSDL as any)(wsdlXml, 'http://example.com/test.wsdl', {});
+                
+                wsdl.onReady((err: Error) => {
+                    expect(err).toBeFalsy();
+                    
+                    // Get the original schema before any processing
+                    const schema = wsdl.definitions.schemas['http://example.com/test'];
+                    const originalBaseType = JSON.stringify(schema.complexTypes['BaseType']);
+                    
+                    // Make multiple calls
+                    const testData = { baseField: 'test1', extraField: 'extra1' };
+                    wsdl.objectToDocumentXML('Request', testData, 'tns', 'http://example.com/test', 'tns:ExtendedType');
+                    wsdl.objectToDocumentXML('Request', testData, 'tns', 'http://example.com/test', 'tns:ExtendedType');
+                    
+                    // Original schema should remain unchanged
+                    const currentBaseType = JSON.stringify(schema.complexTypes['BaseType']);
+                    expect(currentBaseType).toBe(originalBaseType);
+                    done();
+                });
+            });
+
+            it('should create independent results for concurrent schema lookups', (done) => {
+                const wsdlXml = `<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+             xmlns:tns="http://example.com/test" 
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             targetNamespace="http://example.com/test">
+  
+  <types>
+    <xsd:schema targetNamespace="http://example.com/test">
+      <xsd:element name="SimpleRequest" type="xsd:string"/>
+    </xsd:schema>
+  </types>
+  
+  <message name="SimpleRequestMessage">
+    <part name="parameters" element="tns:SimpleRequest"/>
+  </message>
+  
+  <portType name="TestPortType">
+    <operation name="TestOp">
+      <input message="tns:SimpleRequestMessage"/>
+    </operation>
+  </portType>
+  
+  <binding name="TestBinding" type="tns:TestPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="TestOp">
+      <soap:operation soapAction="TestOp"/>
+      <input><soap:body use="literal"/></input>
+    </operation>
+  </binding>
+  
+  <service name="TestService">
+    <port name="TestPort" binding="tns:TestBinding">
+      <soap:address location="http://example.com/test"/>
+    </port>
+  </service>
+</definitions>`;
+                
+                const wsdl = new (WSDL as any)(wsdlXml, 'http://example.com/test.wsdl', {});
+                
+                wsdl.onReady((err: Error) => {
+                    expect(err).toBeFalsy();
+                    
+                    // Multiple concurrent calls should not interfere with each other
+                    const xml1 = wsdl.objectToDocumentXML('SimpleRequest', 'value1', 'tns', 'http://example.com/test');
+                    const xml2 = wsdl.objectToDocumentXML('SimpleRequest', 'value2', 'tns', 'http://example.com/test');
+                    const xml3 = wsdl.objectToDocumentXML('SimpleRequest', 'value3', 'tns', 'http://example.com/test');
+                    
+                    // Each should have its own value
+                    expect(xml1).toContain('value1');
+                    expect(xml2).toContain('value2');
+                    expect(xml3).toContain('value3');
+                    
+                    // Values should not bleed between calls
+                    expect(xml1).not.toContain('value2');
+                    expect(xml2).not.toContain('value3');
+                    expect(xml3).not.toContain('value1');
+                    done();
+                });
+            });
+        });
+
+        describe('Task 4.3: Multi-Service/Multi-Port Support', () => {
+            it('should store serviceName option correctly', () => {
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { serviceName: 'MyService' });
+                expect(wsdl.options.serviceName).toBe('MyService');
+            });
+
+            it('should store portName option correctly', () => {
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { portName: 'MyPort' });
+                expect(wsdl.options.portName).toBe('MyPort');
+            });
+
+            it('should store both serviceName and portName options', () => {
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
+                    serviceName: 'MyService',
+                    portName: 'MyPort'
+                });
+                expect(wsdl.options.serviceName).toBe('MyService');
+                expect(wsdl.options.portName).toBe('MyPort');
+            });
+
+            it('should have undefined serviceName when not specified (backward compatible)', () => {
+                const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', {});
+                expect(wsdl.options.serviceName).toBeUndefined();
+                expect(wsdl.options.portName).toBeUndefined();
+            });
+        });
+
+        describe('Task 4.4: ComplexContent with RestrictionElement', () => {
+            it('should handle ComplexContent with restriction base', (done) => {
+                const wsdlWithRestriction = `<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+             xmlns:tns="http://example.com/test" 
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             targetNamespace="http://example.com/test">
+  
+  <types>
+    <xsd:schema targetNamespace="http://example.com/test">
+      <xsd:complexType name="BaseType">
+        <xsd:sequence>
+          <xsd:element name="field1" type="xsd:string"/>
+          <xsd:element name="field2" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      
+      <xsd:complexType name="RestrictedType">
+        <xsd:complexContent>
+          <xsd:restriction base="tns:BaseType">
+            <xsd:sequence>
+              <xsd:element name="field1" type="xsd:string"/>
+            </xsd:sequence>
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      
+      <xsd:element name="Request" type="tns:RestrictedType"/>
+    </xsd:schema>
+  </types>
+  
+  <message name="RequestMessage">
+    <part name="parameters" element="tns:Request"/>
+  </message>
+  
+  <portType name="TestPortType">
+    <operation name="TestOp">
+      <input message="tns:RequestMessage"/>
+    </operation>
+  </portType>
+  
+  <binding name="TestBinding" type="tns:TestPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="TestOp">
+      <soap:operation soapAction="TestOp"/>
+      <input><soap:body use="literal"/></input>
+    </operation>
+  </binding>
+  
+  <service name="TestService">
+    <port name="TestPort" binding="tns:TestBinding">
+      <soap:address location="http://example.com/test"/>
+    </port>
+  </service>
+</definitions>`;
+                
+                const wsdl = new (WSDL as any)(wsdlWithRestriction, 'http://example.com/test.wsdl', {});
+                
+                wsdl.onReady((err: Error) => {
+                    expect(err).toBeFalsy();
+                    expect(wsdl.definitions).toBeDefined();
+                    
+                    // Should have properly parsed the restricted complex type
+                    const schema = wsdl.definitions.schemas['http://example.com/test'];
+                    expect(schema).toBeDefined();
+                    expect(schema.complexTypes).toBeDefined();
+                    expect(schema.complexTypes['RestrictedType']).toBeDefined();
+                    
+                    done();
+                });
+            });
+
+            it('should handle extension in ComplexContent (existing functionality)', (done) => {
+                const wsdlWithExtension = `<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+             xmlns:tns="http://example.com/test" 
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             targetNamespace="http://example.com/test">
+  
+  <types>
+    <xsd:schema targetNamespace="http://example.com/test">
+      <xsd:complexType name="BaseType">
+        <xsd:sequence>
+          <xsd:element name="baseField" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      
+      <xsd:complexType name="ExtendedType">
+        <xsd:complexContent>
+          <xsd:extension base="tns:BaseType">
+            <xsd:sequence>
+              <xsd:element name="extendedField" type="xsd:string"/>
+            </xsd:sequence>
+          </xsd:extension>
+        </xsd:complexContent>
+      </xsd:complexType>
+      
+      <xsd:element name="Request" type="tns:ExtendedType"/>
+    </xsd:schema>
+  </types>
+  
+  <message name="RequestMessage">
+    <part name="parameters" element="tns:Request"/>
+  </message>
+  
+  <portType name="TestPortType">
+    <operation name="TestOp">
+      <input message="tns:RequestMessage"/>
+    </operation>
+  </portType>
+  
+  <binding name="TestBinding" type="tns:TestPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="TestOp">
+      <soap:operation soapAction="TestOp"/>
+      <input><soap:body use="literal"/></input>
+    </operation>
+  </binding>
+  
+  <service name="TestService">
+    <port name="TestPort" binding="tns:TestBinding">
+      <soap:address location="http://example.com/test"/>
+    </port>
+  </service>
+</definitions>`;
+                
+                const wsdl = new (WSDL as any)(wsdlWithExtension, 'http://example.com/test.wsdl', {});
+                
+                wsdl.onReady((err: Error) => {
+                    expect(err).toBeFalsy();
+                    expect(wsdl.definitions).toBeDefined();
+                    
+                    // Should have properly parsed the extended complex type
+                    const schema = wsdl.definitions.schemas['http://example.com/test'];
+                    expect(schema).toBeDefined();
+                    expect(schema.complexTypes).toBeDefined();
+                    expect(schema.complexTypes['ExtendedType']).toBeDefined();
+                    
+                    done();
+                });
+            });
+        });
+    });
 });

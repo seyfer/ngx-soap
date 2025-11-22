@@ -656,6 +656,14 @@ OperationElement.prototype.postProcess = function (definitions, tag) {
     }
     let messageName = splitQName(child.$message).name;
     let message = definitions.messages[messageName];
+    
+    // Handle missing message definitions gracefully
+    if (!message) {
+      debug(`Warning: Message definition '${messageName}' not found in WSDL for operation '${this.$name}'`);
+      children.splice(i--, 1);
+      continue;
+    }
+    
     message.postProcess(definitions);
     if (message.element) {
       definitions.messages[message.element.$name] = message;
@@ -832,7 +840,8 @@ ComplexTypeElement.prototype.description = function (definitions, xmlns) {
 ComplexContentElement.prototype.description = function (definitions, xmlns) {
   let children = this.children;
   for (let i = 0, child; child = children[i]; i++) {
-    if (child instanceof ExtensionElement) {
+    // Phase 4A - Task 4.4: Handle both ExtensionElement and RestrictionElement
+    if (child instanceof ExtensionElement || child instanceof RestrictionElement) {
       return child.description(definitions, xmlns);
     }
   }
@@ -1211,6 +1220,10 @@ WSDL.prototype._initializeOptions = function (options) {
   this.options.forceUseSchemaXmlns = options.forceUseSchemaXmlns !== undefined ? options.forceUseSchemaXmlns : false;
   this.options.envelopeKey = options.envelopeKey || 'soap';
   this.options.overridePromiseSuffix = options.overridePromiseSuffix || 'Async';
+
+  // Phase 4A - Task 4.3: Multi-service/multi-port support
+  this.options.serviceName = options.serviceName;
+  this.options.portName = options.portName;
 
   // Allow any request headers to keep passing through
   this.options.wsdl_headers = options.wsdl_headers;
@@ -2244,6 +2257,9 @@ WSDL.prototype.findChildSchemaObject = function (parameterTypeObj, childName, ba
           found = this.findChildSchemaObject(foundBase, childName, backtrace);
 
           if (found) {
+            // Clone the found object to prevent mutating the original schema
+            // This prevents state pollution between multiple requests
+            found = _.cloneDeep(found);
             found.$baseNameSpace = childNameSpace;
             found.$type = childNameSpace + ':' + childName;
             break;

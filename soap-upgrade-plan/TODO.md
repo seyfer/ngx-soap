@@ -518,4 +518,201 @@ grep -r "pattern" projects/ngx-soap/src/ --include="*.ts"
 - **Base**: node-soap v0.17.0 (2016)
 - **Target**: node-soap v1.6.0 (2025)
 
-**Last Updated**: 2025-11-22 (All phases complete ✅)
+**Last Updated**: 2025-11-22 (Phases 1-3 complete ✅ | Phase 4 in progress 🚧)
+
+---
+
+## 🚧 PHASE 4: Additional Backports (IN PROGRESS)
+
+**Status**: High Priority in progress  
+**Tests**: TBD  
+**Build**: TBD
+
+### ✅ Phase 4A: High Priority (COMPLETE)
+
+**Status**: All tasks complete ✅  
+**Tests**: 211 passing (+12 new tests from Phase 3)  
+**Build**: ✅ Success  
+**Commit**: Ready
+
+#### Task 4.1: Handle Missing Message Definitions ✅
+**Priority**: 🔴 High  
+**Issue**: Client creation crashes when WSDL has missing/undefined message definitions
+
+**Implementation**:
+- [x] Add graceful handling in OperationElement.postProcess
+- [x] Log warnings instead of throwing errors using debug
+- [x] Continue processing other valid messages
+- [x] Add 3 tests with incomplete WSDLs
+
+**Files Modified**:
+- `projects/ngx-soap/src/lib/soap/wsdl.ts` (OperationElement.postProcess)
+- `projects/ngx-soap/test/soap/wsdl.spec.ts` (3 new tests)
+
+**Tests**: 202 passing (+3 new tests)  
+**Status**: ✅ Complete
+
+---
+
+#### Task 4.2: Prevent $type Mutation ✅
+**Priority**: 🔴 High  
+**Issue**: Schema $type property mutates during request processing, causing issues with subsequent requests
+
+**Implementation**:
+- [x] Deep clone found object before modifying in findChildSchemaObject
+- [x] Ensure original schema remains unchanged between requests
+- [x] Add 3 tests to verify no mutation occurs
+- [x] Tests verify concurrent and sequential calls don't corrupt schema
+
+**Files Modified**:
+- `projects/ngx-soap/src/lib/soap/wsdl.ts` (findChildSchemaObject method)
+- `projects/ngx-soap/test/soap/wsdl.spec.ts` (3 new mutation tests)
+
+**Tests**: 205 passing (+3 new tests)  
+**Status**: ✅ Complete
+
+---
+
+#### Task 4.3: Multi-Service/Multi-Port Support ✅
+**Priority**: 🔴 High  
+**Issue**: WSDLs with multiple services or ports may not work correctly
+
+**Implementation**:
+- [x] Add serviceName and portName options to IOptions with JSDoc
+- [x] Update _initializeServices to filter by serviceName
+- [x] Update _defineService to filter by portName
+- [x] Add options to both WSDL and Client _initializeOptions
+- [x] Add 4 tests to verify options are stored and applied correctly
+- [x] Fully backward compatible (defaults to all services/ports if not specified)
+
+**Files Modified**:
+- `projects/ngx-soap/src/lib/soap/interfaces.ts` (added serviceName/portName options)
+- `projects/ngx-soap/src/lib/soap/wsdl.ts` (added to WSDL._initializeOptions)
+- `projects/ngx-soap/src/lib/soap/client.ts` (_initializeServices, _defineService, _initializeOptions)
+- `projects/ngx-soap/test/soap/wsdl.spec.ts` (4 new tests)
+
+**Tests**: 209 passing (+4 new tests)  
+**Status**: ✅ Complete
+
+---
+
+#### Task 4.4: ComplexContent with RestrictionElement ✅
+**Priority**: 🔴 High  
+**Issue**: ComplexContentElement doesn't properly handle RestrictionElement children
+
+**Implementation**:
+- [x] Update ComplexContentElement.prototype.description
+- [x] Check for both ExtensionElement and RestrictionElement
+- [x] Both restriction and extension now handled properly
+- [x] Add 2 tests with restriction-based and extension-based complex types
+
+**Files Modified**:
+- `projects/ngx-soap/src/lib/soap/wsdl.ts` (ComplexContentElement.prototype.description)
+- `projects/ngx-soap/test/soap/wsdl.spec.ts` (2 new tests)
+
+**Tests**: 211 passing (+2 new tests)  
+**Status**: ✅ Complete
+
+---
+
+### Phase 4B: Medium Priority (Useful Features)
+
+#### Task 4.5: Add overrideElementKey Option ⏳
+**Priority**: 🟡 Medium
+
+**Implementation**:
+- [ ] Add overrideElementKey to IWsdlBaseOptions
+- [ ] Implement key override in element processing
+- [ ] Add JSDoc documentation
+- [ ] Add tests
+
+---
+
+#### Task 4.6: Add envelopeSoapUrl Option ⏳
+**Priority**: 🟡 Medium
+
+**Implementation**:
+- [ ] Add envelopeSoapUrl to IOptions
+- [ ] Apply in envelope generation
+- [ ] Add tests
+
+---
+
+#### Task 4.7: Security Algorithm Options ⏳
+**Priority**: 🟡 Medium
+
+**Implementation**:
+- [ ] Add digestAlgorithm option (sha1, sha256, sha512)
+- [ ] Add signatureAlgorithm option
+- [ ] Update WSSecurityCert to use options
+- [ ] Add tests for each algorithm
+
+---
+
+#### Task 4.8: Namespace Improvements ⏳
+**Priority**: 🟡 Medium
+
+**Implementation**:
+- [ ] Handle same namespace with different prefixes
+- [ ] Improve WSDL xmlns prefix mappings
+- [ ] Better import namespace handling
+- [ ] Add tests
+
+---
+
+#### Task 4.9: Remove Hardcoded Timestamp ID ⏳
+**Priority**: 🟡 Medium
+
+**Implementation**:
+- [ ] Generate unique ID for each timestamp
+- [ ] Update WSSecurity and WSSecurityCert
+- [ ] Add tests
+
+---
+
+#### Task 4.10: Fix xmlns:wsu Spacing ⏳
+**Priority**: 🟡 Medium
+
+**Implementation**:
+- [ ] Add proper spacing after xmlns:wsu attribute
+- [ ] Update security classes
+- [ ] Verify no xmldom warnings
+
+---
+
+#### Task 4.11: Additional WSDL Parsing Optimizations ⏳
+**Priority**: 🟡 Medium
+
+**Implementation**:
+- [ ] Use Map for more lookups
+- [ ] Cache element types
+- [ ] Performance benchmarks
+
+---
+
+### Phase 4C: Low Priority (Nice-to-Have)
+
+_(Will be added after Phase 4A and 4B completion)_
+
+---
+
+## Progress Summary (Updated)
+
+| Phase | Tasks | Status | Tests | Commit |
+|-------|-------|--------|-------|--------|
+| Phase 1 | 7/7 | ✅ Complete | 149 pass | e5969d7 |
+| Phase 2 | 7/7 | ✅ Complete | 157 pass | b8c1fc3 |
+| Phase 3 | 7/7 | ✅ Complete | 199 pass | ✅ Done |
+| Phase 4A | 4/4 | ✅ Complete | 211 pass | Ready |
+| Phase 4B | 0/7 | ⏳ Pending | TBD | - |
+| Phase 4C | 0/5 | ⏳ Pending | TBD | - |
+
+**Total Progress**: 25/37 tasks (68%) 🎉
+
+**Phase 4A Summary**:
+- **Tasks Completed**: 4/4 (100%)
+- **New Tests**: 12 tests added
+- **Total Tests**: 211 passing (all green ✅)
+- **Files Modified**: 4 (interfaces.ts, wsdl.ts, client.ts, wsdl.spec.ts)
+- **Breaking Changes**: None (fully backward compatible)
+- **Ready for Commit**: Yes ✅
