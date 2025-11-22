@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.13.1 / 0.13.0
+
+- Updated to Angular 13 compatibility
+- Updated all @angular packages to version 13
+- Merged improvements from 0.12.0
+
 ## 0.5.0-beta.7
 
 Client events have been removed due to problems with Angular prod bundle. See issue [#29](https://github.com/lula/ngx-soap/issues/29).
