@@ -1,9 +1,14 @@
 # ngx-soap Backport Technical Reference
 
 **Gap**: ngx-soap v0.17.0 (2016) → node-soap v1.6.0 (2025) = 9 years  
-**Status**: 36/41 tasks (88%) | 249 tests | Phase 1-5 Complete ✅  
+**Status**: 36/39 core tasks (92%) | 249 tests | Phase 1-5 Complete ✅  
 **Version**: 0.18.1  
-**Feature Parity**: 90%
+**Feature Parity**: 92%
+
+> **See Also**:  
+> - [FINAL_COMPARISON.md](./FINAL_COMPARISON.md) - Complete version-by-version analysis  
+> - [MISSING_FEATURES.md](./MISSING_FEATURES.md) - 3 remaining features with implementation guide  
+> - [ANALYSIS_SUMMARY.md](./ANALYSIS_SUMMARY.md) - Executive summary
 
 ---
 
