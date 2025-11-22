@@ -12,7 +12,6 @@ import { FormsModule } from '@angular/forms';
 
 import { NgxSoapModule } from '../../projects/ngx-soap/src/public_api';
 import { AppComponent } from './app.component';
-import { FlexLayoutModule } from '@angular/flex-layout';
 
 export const ANGULAR_MATERIAL_MODULES = [
   MatToolbarModule, MatInputModule, MatButtonModule, MatCardModule,
@@ -29,7 +28,6 @@ export const ANGULAR_MATERIAL_MODULES = [
     NgxSoapModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    FlexLayoutModule,
     ...ANGULAR_MATERIAL_MODULES
   ],
   providers: [],

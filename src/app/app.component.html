@@ -9,8 +9,8 @@
 
 <mat-progress-bar mode="indeterminate" *ngIf="loading" color="accent"></mat-progress-bar>
 
-<div fxLayout="row" fxLayoutGap="20px" class="container">
-  <mat-card fxFlex>
+<div class="w-full px-5 py-5 flex flex-row gap-5">
+  <mat-card class="flex-1">
     <mat-card-header>
       <mat-card-title>Operation</mat-card-title>
     </mat-card-header>
@@ -28,7 +28,7 @@
       <button mat-raised-button color="primary" (click)="subtract()" [disabled]="loading">Sub</button>
     </mat-card-actions>
   </mat-card>
-  <mat-card fxFlex>
+  <mat-card class="flex-1">
     <mat-card-header>
       <mat-card-title>Result</mat-card-title>
     </mat-card-header>
@@ -40,8 +40,8 @@
   </mat-card>
 </div>
 
-<div fxLayout="row" fxLayoutGap="20px" class="container" *ngIf="showDiagnostic">
-  <mat-card fxFlex>
+<div class="w-full px-5 py-5 flex flex-row gap-5" *ngIf="showDiagnostic">
+  <mat-card class="flex-1">
     <mat-card-header>
       <mat-card-title>XML Response</mat-card-title>
     </mat-card-header>
@@ -49,7 +49,7 @@
       {{ xmlResponse }}
     </mat-card-content>
   </mat-card>
-  <mat-card fxFlex>
+  <mat-card class="flex-1">
     <mat-card-header>
       <mat-card-title>JSON Response</mat-card-title>
     </mat-card-header>
