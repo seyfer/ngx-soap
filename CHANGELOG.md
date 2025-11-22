@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.15.1 / 0.15.0
+
+- Updated to Angular 15 compatibility
+- Updated all @angular packages to version 15
+- Merged improvements from 0.14.0
+
 ## 0.5.0-beta.7
 
 Client events have been removed due to problems with Angular prod bundle. See issue [#29](https://github.com/lula/ngx-soap/issues/29).
