@@ -22,8 +22,8 @@
     "pack": "cd ./dist/ngx-soap/ && npm pack && cd ../.. && cp dist/ngx-soap/ngx*tgz ..",
     "publish": "cd ./dist/ngx-soap/ && npm publish",
     "publish:dry-run": "cd ./dist/ngx-soap/ && npm publish --dry-run",
-    "build:lib:publish": "npm run test:lib && npm run build:lib && npm run pack && npm run publish",
-    "build:lib:publish:dry-run": "npm run test:lib && npm run build:lib && npm run pack && npm run publish:dry-run",
+    "build:lib:publish": "npm run test && npm run build:lib && npm run pack && npm run publish",
+    "build:lib:publish:dry-run": "npm run test && npm run build:lib && npm run pack && npm run publish:dry-run",
     "bump:patch": "npm version patch --no-git-tag-version",
     "bump:minor": "npm version minor --no-git-tag-version",
     "bump:major": "npm version major --no-git-tag-version"
