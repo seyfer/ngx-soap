@@ -6,6 +6,22 @@
 - Package renaming finalization (ngx-soap to ngx-soap-next)
 - Build and dependency fixes
 
+## 0.8.0
+
+- Prepared for Angular 11 migration
+- Updated build tooling and configuration
+- Merged improvements from 0.7.0
+
+## 0.7.0
+
+- Updated to Angular 10 compatibility ([#87](https://github.com/seyfer/ngx-soap/pull/87))
+- Fixed tests for Angular 10
+- Renamed package from `ngx-soap` to `ngx-soap-next`
+- Security updates:
+  - Updated lodash from 4.17.15 to 4.17.19 ([#83](https://github.com/seyfer/ngx-soap/pull/83))
+  - Updated http-proxy from 1.18.0 to 1.18.1 ([#85](https://github.com/seyfer/ngx-soap/pull/85))
+- Updated dependencies and build configuration
+
 ## 0.5.0-beta.7
 
 Client events have been removed due to problems with Angular prod bundle. See issue [#29](https://github.com/lula/ngx-soap/issues/29).
