@@ -840,7 +840,7 @@ ComplexTypeElement.prototype.description = function (definitions, xmlns) {
 ComplexContentElement.prototype.description = function (definitions, xmlns) {
   let children = this.children;
   for (let i = 0, child; child = children[i]; i++) {
-    // Phase 4A - Task 4.4: Handle both ExtensionElement and RestrictionElement
+    // Handle both ExtensionElement and RestrictionElement in ComplexContent
     if (child instanceof ExtensionElement || child instanceof RestrictionElement) {
       return child.description(definitions, xmlns);
     }
@@ -862,7 +862,7 @@ ElementElement.prototype.description = function (definitions, xmlns) {
   let element = {},
     name = this.$name;
   
-  // Phase 4B - Task 4.5: Apply element key override if configured
+  // Apply element key override if configured (for element renaming)
   if (definitions.options && definitions.options.overrideElementKey && definitions.options.overrideElementKey[name]) {
     name = definitions.options.overrideElementKey[name];
     debug('Element key overridden: %s -> %s', this.$name, name);
@@ -1219,7 +1219,7 @@ WSDL.prototype._initializeOptions = function (options) {
     this.options.namespaceArrayElements = true;
   }
 
-  // Phase 3 options
+  // Configuration options
   this.options.useEmptyTag = options.useEmptyTag !== undefined ? options.useEmptyTag : false;
   this.options.preserveWhitespace = options.preserveWhitespace !== undefined ? options.preserveWhitespace : false;
   this.options.normalizeNames = options.normalizeNames !== undefined ? options.normalizeNames : false;
@@ -1228,20 +1228,20 @@ WSDL.prototype._initializeOptions = function (options) {
   this.options.envelopeKey = options.envelopeKey || 'soap';
   this.options.overridePromiseSuffix = options.overridePromiseSuffix || 'Async';
 
-  // Phase 4A - Task 4.3: Multi-service/multi-port support
+  // Multi-service/multi-port support
   this.options.serviceName = options.serviceName;
   this.options.portName = options.portName;
 
-  // Phase 4B - Task 4.5: Element key override support
+  // Element key override support
   this.options.overrideElementKey = options.overrideElementKey;
 
-  // Phase 4B - Task 4.6: Custom SOAP envelope URL support
+  // Custom SOAP envelope URL support
   this.options.envelopeSoapUrl = options.envelopeSoapUrl;
 
-  // Phase 4C - Task 4.15: Response encoding support
+  // Response encoding support
   this.options.encoding = options.encoding || 'utf-8';
 
-  // Phase 4C - Task 4.16: Custom WSDL cache support
+  // Custom WSDL cache support
   this.options.wsdlCache = options.wsdlCache;
 
   // Allow any request headers to keep passing through

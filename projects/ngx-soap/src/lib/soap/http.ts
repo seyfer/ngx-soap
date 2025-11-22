@@ -81,7 +81,6 @@ HttpClient.prototype.buildRequest = function(rurl, data, exheaders, exoptions) {
       options[attr] = exoptions[attr];
     }
   }
-  console.log('Http request: %j', options);
   return options;
 };
 
@@ -93,7 +92,6 @@ HttpClient.prototype.buildRequest = function(rurl, data, exheaders, exoptions) {
  * @param  The parsed body
  */
 HttpClient.prototype.handleResponse = function(req, res, body) {
-  console.log('Http response body: %j', body);
   if (typeof body === 'string') {
     // Remove any extra characters that appear before or after the SOAP
     // envelope.

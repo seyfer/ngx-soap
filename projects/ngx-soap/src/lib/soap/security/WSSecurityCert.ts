@@ -62,9 +62,13 @@ export function WSSecurityCert(privatePEM, publicP12PEM, password, options?) {
   
   // Store reference exclusion options
   this.excludeReferencesFromSigning = options.excludeReferencesFromSigning || [];
+  
+  // Custom XML to append to security header (e.g., custom authentication elements)
+  this.appendElement = options.appendElement || '';
 
   this.signer = new SignedXml();
   this.signer.signatureAlgorithm = this.signatureAlgorithm;
+  this.signer.canonicalizationAlgorithm = 'http://www.w3.org/2001/10/xml-exc-c14n#';
   this.signer.signingKey = {
     key: privatePEM,
     passphrase: password
@@ -102,6 +106,7 @@ WSSecurityCert.prototype.postProcess = function (xml, envelopeKey) {
   //   id: this.x509Id
   // });
 
+  // Build security header with optional custom XML element
   var secHeader = `
     <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"
                   xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
@@ -113,7 +118,7 @@ WSSecurityCert.prototype.postProcess = function (xml, envelopeKey) {
       <Timestamp xmlns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" Id="_1"> 
         <Created>${this.created}</Created>
         <Expires>${this.expires}</Expires>
-      </Timestamp>
+      </Timestamp>${this.appendElement}
     </wsse:Security>
   `;
 
@@ -132,11 +137,19 @@ WSSecurityCert.prototype.postProcess = function (xml, envelopeKey) {
 
   // Use the configured digest algorithm for references
   if (!shouldExclude('Body')) {
-    this.signer.addReference("//*[name(.)='" + envelopeKey + ":Body']", references, this.digestAlgorithm);
+    this.signer.addReference({
+      xpath: "//*[name(.)='" + envelopeKey + ":Body']",
+      transforms: references,
+      digestAlgorithm: 'http://www.w3.org/2001/04/xmlenc#' + this.digestAlgorithm
+    });
   }
   
   if (!shouldExclude('Timestamp')) {
-    this.signer.addReference("//*[name(.)='wsse:Security']/*[local-name(.)='Timestamp']", references, this.digestAlgorithm);
+    this.signer.addReference({
+      xpath: "//*[name(.)='wsse:Security']/*[local-name(.)='Timestamp']",
+      transforms: references,
+      digestAlgorithm: 'http://www.w3.org/2001/04/xmlenc#' + this.digestAlgorithm
+    });
   }
 
   this.signer.computeSignature(xmlWithSec);

@@ -1,196 +1,134 @@
-# ngx-soap Backport TODO
+# ngx-soap Backport Progress
 
-**Branch**: `update-node-soap`  
-**Status**: Phase 1-4 Complete ✅ (89%)  
-**Tests**: 235 passing | **Breaking Changes**: 0
+**Status**: Phase 1-5 Complete ✅  
+**Tests**: 249 passing | **Breaking Changes**: 0  
+**Feature Parity**: 90% with node-soap v1.6.0  
+**Version**: 0.18.1 ready for release
 
----
-
-## Progress Overview
-
-| Phase | Tasks | Status | Tests | Notes |
-|-------|-------|--------|-------|-------|
-| Phase 1 | 7/7 | ✅ | 149 | Security & Dependencies |
-| Phase 2 | 7/7 | ✅ | 157 | Bug Fixes & Performance |
-| Phase 3 | 7/7 | ✅ | 199 | New Options & Features |
-| Phase 4A | 4/4 | ✅ | 211 | Critical Fixes |
-| Phase 4B | 5/7 | ✅ | 223 | Medium Priority (2 deferred) |
-| Phase 4C | 3/5 | ✅ | 235 | Low Priority (2 deferred) |
-
-**Total**: 33/37 tasks (89%) | **Deferred**: 4 tasks
+> **Technical Details**: See [BACKPORT_INFO.md](./BACKPORT_INFO.md)
 
 ---
 
-## ✅ PHASE 1: Security & Dependencies
+## Phase Progress
 
-**Completed**: 2025-11-22 | **Tests**: 149 | **Commit**: `e5969d7`
+| Phase | Tasks | Tests | Status | Key Features |
+|-------|-------|-------|--------|--------------|
+| 1 | 7/7 | 149 | ✅ | xml-crypto v6.1.2, crypto.randomUUID(), trim() |
+| 2 | 7/7 | 157 | ✅ | Empty body, SOAP Fault, Map namespaces |
+| 3 | 7/7 | 199 | ✅ | 8 options, WSSecurityCertWithToken, WSSecurityPlusCert |
+| 4A | 4/4 | 211 | ✅ | Missing messages, $type fix, multi-service/port |
+| 4B | 5/7 | 223 | ✅ | Security algorithms, envelopeSoapUrl, overrideElementKey |
+| 4C | 3/5 | 235 | ✅ | Encoding, wsdlCache, excludeReferencesFromSigning |
+| 5 | 3/4 | 249 | ✅ | appendElement, envelopeKey (WSSecurity) |
 
-### Changes
-- [x] xml-crypto v2.1.6 → v6.1.2 (CRITICAL)
-- [x] Removed uuid → crypto.randomUUID() with fallback
-- [x] Native String.trim() (2x faster)
-- [x] Updated: sax v1.4.1, lodash v4.17.21, debug v4.4.3
-
-**Impact**: 9 years of security fixes, modern crypto APIs
-
----
-
-## ✅ PHASE 2: Bug Fixes & Performance
-
-**Completed**: 2025-11-22 | **Tests**: 157 (+8) | **Commit**: `b8c1fc3`
-
-### Changes
-- [x] Empty SOAP body handling (null/undefined/one-way operations)
-- [x] SOAP Fault 1.1/1.2 support + `returnFault` option
-- [x] Element reference resolution ($ref with maxOccurs/minOccurs)
-- [x] Array namespace inheritance + `namespaceArrayElements` option
-- [x] Map-based namespace lookups (faster than Object)
-
-**Impact**: Robust error handling, better standards compliance, performance
+**Completed**: 36/41 tasks (88%)  
+**Deferred**: 5 tasks (optimizations & edge cases)
 
 ---
 
-## ✅ PHASE 3: New Options & Features
+## ✅ Phase 1: Security & Dependencies
 
-**Completed**: 2025-11-22 | **Tests**: 199 (+42)
+**Completed**: 2025-11-22 | Commit: `e5969d7`
 
-### Changes
+- [x] xml-crypto v2.1.6 → v6.1.2
+- [x] Remove uuid → crypto.randomUUID()
+- [x] Native String.trim()
+- [x] Update: sax v1.4.1, lodash v4.17.21, debug v4.4.3
+
+---
+
+## ✅ Phase 2: Bug Fixes & Performance
+
+**Completed**: 2025-11-22 | Commit: `b8c1fc3`
+
+- [x] Empty SOAP body handling
+- [x] SOAP Fault 1.1/1.2 + `returnFault` option
+- [x] Element reference $ref resolution
+- [x] Array namespace inheritance + `namespaceArrayElements`
+- [x] Map-based namespace lookups
+
+---
+
+## ✅ Phase 3: Options & Features
+
+**Completed**: 2025-11-22
+
 - [x] 8 new options: `useEmptyTag`, `preserveWhitespace`, `normalizeNames`, `suppressStack`, `forceUseSchemaXmlns`, `envelopeKey`, `overridePromiseSuffix`, `exchangeId`
 - [x] WSSecurityCertWithToken (Certificate + Username Token)
 - [x] WSSecurityPlusCert (Combined WS-Security)
-- [x] Exchange ID (EID) tracking for events
-- [x] Comprehensive JSDoc documentation
-
-**Impact**: Enhanced developer experience, flexible configuration, better tracking
+- [x] Exchange ID (EID) tracking
+- [x] Comprehensive JSDoc
 
 ---
 
-## ✅ PHASE 4A: High Priority (Critical Fixes)
+## ✅ Phase 4A: Critical Fixes
 
-**Completed**: 2025-11-22 | **Tests**: 211 (+12)
+**Completed**: 2025-11-22
 
-### Task 4.1: Handle Missing Message Definitions ✅
-**Fix**: Graceful error handling for incomplete WSDLs
-```typescript
-if (!message) {
-  debug('Message definition not found');
-  continue; // Skip instead of crash
-}
-```
-
-### Task 4.2: Prevent $type Mutation ✅
-**Fix**: Deep clone schema objects to prevent side effects
-```typescript
-found = _.cloneDeep(foundCandidate); // Immutable
-```
-
-### Task 4.3: Multi-Service/Multi-Port Support ✅
-**Feature**: Select specific service/port from WSDL
-```typescript
-createClient(url, {
-  serviceName: 'MyService',
-  portName: 'MyPort'
-});
-```
-
-### Task 4.4: ComplexContent with RestrictionElement ✅
-**Fix**: Handle both Extension and Restriction in ComplexContent
-```typescript
-if (child instanceof ExtensionElement || child instanceof RestrictionElement) {
-  return child.description(definitions, xmlns);
-}
-```
+- [x] Handle missing message definitions
+- [x] Prevent $type mutation (_.cloneDeep)
+- [x] Multi-service/port: `serviceName`, `portName`
+- [x] ComplexContent with RestrictionElement
 
 ---
 
-## ✅ PHASE 4B: Medium Priority
+## ✅ Phase 4B: Medium Priority
 
-**Completed**: 2025-11-22 | **Tests**: 223 (+12)
+**Completed**: 2025-11-22
 
-### Task 4.5: Add overrideElementKey Option ✅
+- [x] `overrideElementKey` option
+- [x] `envelopeSoapUrl` option
+- [x] Security: `digestAlgorithm`, `signatureAlgorithm`
+- [x] Remove hardcoded timestamp IDs
+- [x] Fix xmlns:wsu spacing
+- [ ] Namespace improvements ⏭️ **DEFERRED**
+- [ ] WSDL optimizations ⏭️ **DEFERRED**
+
+---
+
+## ✅ Phase 4C: Low Priority
+
+**Completed**: 2025-11-22
+
+- [x] `excludeReferencesFromSigning` option
+- [x] `encoding` option
+- [x] Custom WSDL cache: `IWSDLCache`, `wsdlCache`
+- [ ] XML processing improvements ⏭️ **DEFERRED**
+- [ ] Performance optimizations ⏭️ **DEFERRED**
+
+---
+
+## ✅ Phase 5: Security Enhancements
+
+**Completed**: 2025-11-22
+
+- [x] `appendElement` for WSSecurity
+- [x] `appendElement` for WSSecurityCert
+- [x] `envelopeKey` for WSSecurity
+- [x] WSSecurityCertWithToken updated
+- [ ] WSDL attributes ⏭️ **DEFERRED**
+
+**Implementation**:
 ```typescript
-createClient(url, {
-  overrideElementKey: { 'OldName': 'NewName' }
+// WSSecurity with custom elements
+new WSSecurity('user', 'pass', {
+  appendElement: '<custom:Token>ABC</custom:Token>',
+  envelopeKey: 'SOAP-ENV'
 });
-```
 
-### Task 4.6: Add envelopeSoapUrl Option ✅
-```typescript
-createClient(url, {
-  envelopeSoapUrl: 'http://custom.soap.org/envelope/'
-});
-```
-
-### Task 4.7: Security Algorithm Options ✅
-```typescript
+// WSSecurityCert with custom elements
 new WSSecurityCert(privateKey, publicKey, password, {
-  digestAlgorithm: 'sha256',     // sha1, sha256, sha512
-  signatureAlgorithm: '...'      // Custom signature
+  appendElement: '<custom:Sig>XYZ</custom:Sig>'
 });
 ```
-
-### Task 4.9: Remove Hardcoded Timestamp ID ✅
-Dynamic UUID generation for timestamp IDs
-
-### Task 4.10: Fix xmlns:wsu Spacing ✅
-Proper spacing in WSSecurity XML attributes
-
-### Task 4.8: Namespace Improvements ⏭️ DEFERRED
-**Reason**: Complex refactoring, current implementation functional  
-**Recommendation**: Dedicated namespace improvement phase
-
-### Task 4.11: WSDL Parsing Optimizations ⏭️ DEFERRED
-**Reason**: Requires comprehensive benchmarking  
-**Recommendation**: Create benchmarking suite first
 
 ---
 
-## ✅ PHASE 4C: Low Priority
+## Configuration Summary
 
-**Completed**: 2025-11-22 | **Tests**: 235 (+12)
-
-### Task 4.14: Add excludeReferencesFromSigning Option ✅
-```typescript
-new WSSecurityCert(privateKey, publicKey, password, {
-  excludeReferencesFromSigning: ['Body', 'Timestamp']
-});
-```
-
-### Task 4.15: Add encoding Option ✅
+### Client Options (16)
 ```typescript
 createClient(url, {
-  encoding: 'latin1'  // Default: 'utf-8'
-});
-```
-*Note: Browser handles encoding via XMLHttpRequest; option for API compatibility*
-
-### Task 4.16: Custom WSDL Cache Support ✅
-```typescript
-interface IWSDLCache {
-  has(key: string): boolean;
-  get(key: string): any;
-  set(key: string, value: any): void;
-}
-
-createClient(url, {
-  wsdlCache: new MyLRUCache()
-});
-```
-
-### Task 4.17: XML Processing Improvements ⏭️ DEFERRED
-**Reason**: Current implementation robust (sax, Phase 2/3 improvements)  
-**Recommendation**: Address specific edge cases as needed
-
-### Task 4.18: Additional Performance Optimizations ⏭️ DEFERRED
-**Reason**: Key optimizations complete  
-**Recommendation**: Benchmark-driven optimization
-
----
-
-## Configuration Options Summary
-
-```typescript
-interface IOptions {
   // Phase 2
   returnFault?: boolean;
   namespaceArrayElements?: boolean;
@@ -205,39 +143,53 @@ interface IOptions {
   overridePromiseSuffix?: string;
   exchangeId?: string;
   
-  // Phase 4A
+  // Phase 4
   serviceName?: string;
   portName?: string;
-  
-  // Phase 4B
   overrideElementKey?: { [key: string]: string };
   envelopeSoapUrl?: string;
-  
-  // Phase 4C
   encoding?: string;
   wsdlCache?: IWSDLCache;
-}
+});
+```
 
-interface WSSecurityCertOptions {
-  // Phase 4B
+### WSSecurity Options (9)
+```typescript
+new WSSecurity(username, password, {
+  passwordType?: 'PasswordText' | 'PasswordDigest';
+  hasTimeStamp?: boolean;
+  hasNonce?: boolean;
+  hasTokenCreated?: boolean;
+  actor?: string;
+  mustUnderstand?: boolean;
+  envelopeKey?: string;        // Phase 5
+  appendElement?: string;      // Phase 5
+});
+```
+
+### WSSecurityCert Options (5)
+```typescript
+new WSSecurityCert(privateKey, publicKey, password, {
   digestAlgorithm?: 'sha1' | 'sha256' | 'sha512';
   signatureAlgorithm?: string;
-  
-  // Phase 4C
   excludeReferencesFromSigning?: string[];
-}
+  appendElement?: string;      // Phase 5
+});
 ```
 
 ---
 
-## Deferred Tasks (4 total)
+## Deferred Tasks
 
-| Task | Phase | Reason | Recommendation |
-|------|-------|--------|----------------|
-| 4.8: Namespace improvements | 4B | Complex refactoring | Dedicated phase |
-| 4.11: WSDL optimizations | 4B | Needs benchmarking | Profile first |
-| 4.17: XML processing | 4C | Current impl robust | Case-by-case |
-| 4.18: Performance opts | 4C | Key opts done | Benchmark-driven |
+| Task | Phase | Reason | Priority |
+|------|-------|--------|----------|
+| Namespace improvements | 4B | Complex refactoring | LOW |
+| WSDL parsing optimizations | 4B | Needs benchmarking | LOW |
+| XML processing improvements | 4C | Current impl robust | LOW |
+| Performance optimizations | 4C | Key opts complete | LOW |
+| WSDL attributes | 5 | Edge case, no reports | LOW |
+
+**Decision**: Defer until specific use cases or benchmarks justify the effort.
 
 ---
 
@@ -250,51 +202,44 @@ Phase 3:   199 tests ✅ (+42)
 Phase 4A:  211 tests ✅ (+12)
 Phase 4B:  223 tests ✅ (+12)
 Phase 4C:  235 tests ✅ (+12)
+Phase 5:   249 tests ✅ (+14)
 
-Total: 235 passing | 1 skipped
+Total: 249 passing | 1 skipped
 ```
 
-**Test Categories**:
-- ✅ Client operations
-- ✅ WSDL parsing
-- ✅ Security protocols (all 6)
-- ✅ Configuration options
-- ✅ Error handling (empty body, faults)
-- ✅ Multi-service/port WSDLs
-- ✅ Security algorithms
-
----
-
-## Files Modified
-
-```
-Core:
-- projects/ngx-soap/src/lib/soap/wsdl.ts
-- projects/ngx-soap/src/lib/soap/client.ts
-- projects/ngx-soap/src/lib/soap/interfaces.ts
-- projects/ngx-soap/src/lib/soap/nscontext.ts
-
-Security:
-- projects/ngx-soap/src/lib/soap/security/WSSecurity.ts
-- projects/ngx-soap/src/lib/soap/security/WSSecurityCert.ts
-- projects/ngx-soap/src/lib/soap/security/WSSecurityCertWithToken.ts (new)
-- projects/ngx-soap/src/lib/soap/security/WSSecurityPlusCert.ts (new)
-
-Tests:
-- projects/ngx-soap/test/soap/wsdl.spec.ts
-- projects/ngx-soap/test/soap/client-operations.spec.ts
-- projects/ngx-soap/test/soap/security/*.spec.ts
-```
+**Categories**: Client ops, WSDL parsing, Security (6 protocols), Config options, Error handling
 
 ---
 
 ## Version Roadmap
 
-- **v0.17.0**: Original (2016 baseline)
-- **v0.17.1**: Phases 1-3 ✅
-- **v0.18.0**: Phases 1-4 ✅ **READY FOR RELEASE**
-- **v0.19.0**: Deferred tasks (if needed)
-- **v1.0.0**: Full node-soap parity target
+- **v0.17.0**: Original baseline (2016)
+- **v0.18.0**: Phases 1-4 ✅ (89% parity)
+- **v0.18.1**: Phase 5 ✅ (90% parity) ← **Current**
+- **v0.19.0**: Deferred tasks (if justified)
+- **v1.0.0**: Full parity target
+
+---
+
+## Files Modified
+
+### Core (4)
+- `wsdl.ts` - Parsing, elements, options
+- `client.ts` - Operations, multi-service
+- `interfaces.ts` - TypeScript definitions
+- `nscontext.ts` - Map namespaces
+
+### Security (6)
+- `WSSecurity.ts` - envelopeKey, appendElement
+- `WSSecurityCert.ts` - appendElement, algorithms
+- `WSSecurityCertWithToken.ts` ⭐ NEW
+- `WSSecurityPlusCert.ts` ⭐ NEW
+- `BasicAuthSecurity.ts`, `BearerSecurity.ts`
+
+### Tests (12 suites)
+- All security protocol tests
+- `wsdl.spec.ts`, `client-operations.spec.ts`
+- +100 new tests across phases
 
 ---
 
@@ -307,13 +252,6 @@ npm run test:lib
 # Build
 npm run build:lib
 
-# Start dev server
-npm run start
-
-# Git
-git status
-git log --oneline -10
-
 # Search
 grep -r "pattern" projects/ngx-soap/src/ --include="*.ts"
 ```
@@ -322,46 +260,12 @@ grep -r "pattern" projects/ngx-soap/src/ --include="*.ts"
 
 ## Documentation
 
-- **[BACKPORT_INFO.md](./BACKPORT_INFO.md)**: Technical reference, code patterns, all implementations
-- **[../README.md](../README.md)**: Usage documentation
-- **[../CHANGELOG.md](../CHANGELOG.md)**: Version history
+- **[BACKPORT_INFO.md](./BACKPORT_INFO.md)** - Complete technical reference with code examples
+- **[../CHANGELOG.md](../CHANGELOG.md)** - Version history
+- **[../README.md](../README.md)** - Usage guide
 
 ---
 
-## Commit Message (v0.18.0)
-
-```
-feat: phase 4 complete - additional backports from node-soap
-
-High Priority (Phase 4A):
-- Handle missing message definitions gracefully
-- Prevent schema $type mutation between requests
-- Add multi-service/port selection (serviceName, portName)
-- Support ComplexContent with RestrictionElement
-
-Medium Priority (Phase 4B):
-- Add overrideElementKey option for element renaming
-- Add envelopeSoapUrl option for custom envelope URLs
-- Add security algorithm options (digestAlgorithm, signatureAlgorithm)
-- Remove hardcoded timestamp IDs (use dynamic UUIDs)
-- Fix xmlns:wsu spacing in WSSecurity
-
-Low Priority (Phase 4C):
-- Add excludeReferencesFromSigning option
-- Add encoding option (utf-8, latin1, etc.)
-- Add IWSDLCache interface and wsdlCache option
-
-Tests: 235 passing (+36 new tests)
-Breaking Changes: None
-Backward Compatible: Yes
-Feature Parity: 89% with node-soap v1.6.0
-
-Deferred: 4 tasks (namespace improvements, performance optimization)
-- Require dedicated phases with extensive testing
-```
-
----
-
-**Status**: 89% Complete | 235 Tests | Production Ready ✅  
 **Last Updated**: 2025-11-22  
-**Ready for Release**: v0.18.0
+**Status**: Production Ready ✅  
+**Ready for Release**: v0.18.1

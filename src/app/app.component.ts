@@ -21,10 +21,9 @@ export class AppComponent {
   constructor(private soap: NgxSoapService) {
     this.soap.createClient('assets/calculator.wsdl')
       .then(client => {
-        console.log('Client', client);
         this.client = client;
       })
-      .catch(err => console.log('Error', err));
+      .catch(err => console.error('Error creating SOAP client:', err));
   }
 
   sum() {
@@ -35,12 +34,11 @@ export class AppComponent {
     };
     (<any>this.client).Add(body).subscribe(
       (res: ISoapMethodResponse) => {
-        console.log('method response', res);
         this.xmlResponse = res.xml;
         this.message = res.result.AddResult;
         this.loading = false;
       },
-      err => console.log(err)
+      err => console.error('Error calling Add method:', err)
     );
   }
 
@@ -52,12 +50,11 @@ export class AppComponent {
     };
     (<any>this.client).Subtract(body).subscribe(
       (res: ISoapMethodResponse) => {
-        console.log('method response', res);
         this.xmlResponse = res.xml;
         this.message = res.result.SubtractResult;
         this.loading = false;
       },
-      err => console.log(err)
+      err => console.error('Error calling Subtract method:', err)
     );
   }
 }

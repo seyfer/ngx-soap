@@ -2,11 +2,15 @@ import { HttpClient as SoapHttpClient } from '../../src/lib/soap/http';
 
 describe('HttpClient', () => {
     describe('Constructor', () => {
-        it('should create instance with default options', () => {
-            const client = new (SoapHttpClient as any)();
+        it('should create instance with default or empty options', () => {
+            const client1 = new (SoapHttpClient as any)();
+            const client2 = new (SoapHttpClient as any)({});
+            const client3 = new (SoapHttpClient as any)(null);
             
-            expect(client).toBeDefined();
-            expect(client._request).toBeNull();
+            expect(client1).toBeDefined();
+            expect(client1._request).toBeNull();
+            expect(client2._request).toBeNull();
+            expect(client3._request).toBeNull();
         });
 
         it('should create instance with custom request', () => {
@@ -14,27 +18,6 @@ describe('HttpClient', () => {
             const client = new (SoapHttpClient as any)({ request: customRequest });
             
             expect(client._request).toBe(customRequest);
-        });
-
-        it('should create instance with empty options object', () => {
-            const client = new (SoapHttpClient as any)({});
-            
-            expect(client).toBeDefined();
-            expect(client._request).toBeNull();
-        });
-
-        it('should handle undefined options', () => {
-            const client = new (SoapHttpClient as any)(undefined);
-            
-            expect(client).toBeDefined();
-            expect(client._request).toBeNull();
-        });
-
-        it('should handle null options', () => {
-            const client = new (SoapHttpClient as any)(null);
-            
-            expect(client).toBeDefined();
-            expect(client._request).toBeNull();
         });
     });
 
@@ -301,29 +284,12 @@ describe('HttpClient', () => {
             expect(result).toBe(body);
         });
 
-        it('should handle non-string body', () => {
-            const body = { data: 'test' };
-            const result = client.handleResponse(null, null, body);
-            
-            expect(result).toBe(body);
-        });
-
-        it('should handle null body', () => {
-            const result = client.handleResponse(null, null, null);
-            
-            expect(result).toBeNull();
-        });
-
-        it('should handle undefined body', () => {
-            const result = client.handleResponse(null, null, undefined);
-            
-            expect(result).toBeUndefined();
-        });
-
-        it('should handle empty string body', () => {
-            const result = client.handleResponse(null, null, '');
-            
-            expect(result).toBe('');
+        it('should handle various body types', () => {
+            const objBody = { data: 'test' };
+            expect(client.handleResponse(null, null, objBody)).toBe(objBody);
+            expect(client.handleResponse(null, null, null)).toBeNull();
+            expect(client.handleResponse(null, null, undefined)).toBeUndefined();
+            expect(client.handleResponse(null, null, '')).toBe('');
         });
 
         it('should handle multiline SOAP envelope', () => {

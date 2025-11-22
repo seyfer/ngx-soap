@@ -213,4 +213,146 @@ describe('WSSecurity', () => {
             expect(xmlContainsElement(xml, 'wsu:Timestamp')).toBe(false);
         });
     });
+
+    describe('Custom XML Element (appendElement)', () => {
+        it('should append custom XML element when specified', () => {
+            const customElement = '<custom:Token xmlns:custom="http://example.com/custom">ABC123</custom:Token>';
+            const options = {
+                passwordType: 'PasswordText',
+                appendElement: customElement
+            };
+            const security = new (WSSecurity as any)('user', 'pass', options);
+            const xml = security.toXML();
+            
+            expect(isWellFormedXml(xml)).toBe(true);
+            expect(xml).toContain(customElement);
+            // Verify it's before closing Security tag
+            const customIndex = xml.indexOf(customElement);
+            const securityCloseIndex = xml.indexOf('</wsse:Security>');
+            expect(customIndex).toBeGreaterThan(-1);
+            expect(customIndex).toBeLessThan(securityCloseIndex);
+        });
+
+        it('should work without appendElement (default empty string)', () => {
+            const security = new (WSSecurity as any)('user', 'pass', 'PasswordText');
+            const xml = security.toXML();
+            
+            expect(isWellFormedXml(xml)).toBe(true);
+            expect(xml).toContain('</wsse:UsernameToken>');
+            expect(xml).toContain('</wsse:Security>');
+        });
+
+        it('should handle empty appendElement', () => {
+            const options = {
+                passwordType: 'PasswordText',
+                appendElement: ''
+            };
+            const security = new (WSSecurity as any)('user', 'pass', options);
+            const xml = security.toXML();
+            
+            expect(isWellFormedXml(xml)).toBe(true);
+        });
+
+        it('should support complex custom XML elements', () => {
+            const customElement = '<custom:Data><custom:Field1>Value1</custom:Field1><custom:Field2>Value2</custom:Field2></custom:Data>';
+            const options = {
+                passwordType: 'PasswordText',
+                appendElement: customElement
+            };
+            const security = new (WSSecurity as any)('user', 'pass', options);
+            const xml = security.toXML();
+            
+            expect(xml).toContain('<custom:Field1>Value1</custom:Field1>');
+            expect(xml).toContain('<custom:Field2>Value2</custom:Field2>');
+        });
+    });
+
+    describe('Custom Envelope Prefix (envelopeKey)', () => {
+        it('should use custom envelope key for actor and mustUnderstand', () => {
+            const options = {
+                passwordType: 'PasswordText',
+                actor: 'http://example.com/actor',
+                mustUnderstand: true,
+                envelopeKey: 'SOAP-ENV'
+            };
+            const security = new (WSSecurity as any)('user', 'pass', options);
+            const xml = security.toXML();
+            
+            expect(xml).toContain('SOAP-ENV:actor="http://example.com/actor"');
+            expect(xml).toContain('SOAP-ENV:mustUnderstand="1"');
+            expect(xml).not.toContain('soap:actor');
+            expect(xml).not.toContain('soap:mustUnderstand');
+        });
+
+        it('should default to "soap" prefix when envelopeKey not specified', () => {
+            const options = {
+                passwordType: 'PasswordText',
+                actor: 'http://example.com/actor',
+                mustUnderstand: true
+            };
+            const security = new (WSSecurity as any)('user', 'pass', options);
+            const xml = security.toXML();
+            
+            expect(xml).toContain('soap:actor="http://example.com/actor"');
+            expect(xml).toContain('soap:mustUnderstand="1"');
+        });
+
+        it('should work with custom envelope key without actor/mustUnderstand', () => {
+            const options = {
+                passwordType: 'PasswordText',
+                envelopeKey: 'env'
+            };
+            const security = new (WSSecurity as any)('user', 'pass', options);
+            const xml = security.toXML();
+            
+            expect(isWellFormedXml(xml)).toBe(true);
+            // Should not have actor/mustUnderstand at all
+            expect(xml).not.toContain('env:actor');
+            expect(xml).not.toContain('env:mustUnderstand');
+        });
+    });
+
+    describe('Combined Features', () => {
+        it('should work with both appendElement and envelopeKey', () => {
+            const customElement = '<custom:Token>XYZ789</custom:Token>';
+            const options = {
+                passwordType: 'PasswordText',
+                appendElement: customElement,
+                envelopeKey: 'SOAP-ENV',
+                actor: 'http://example.com/actor',
+                mustUnderstand: true
+            };
+            const security = new (WSSecurity as any)('user', 'pass', options);
+            const xml = security.toXML();
+            
+            expect(isWellFormedXml(xml)).toBe(true);
+            expect(xml).toContain(customElement);
+            expect(xml).toContain('SOAP-ENV:actor="http://example.com/actor"');
+            expect(xml).toContain('SOAP-ENV:mustUnderstand="1"');
+        });
+
+        it('should work with all features combined', () => {
+            const customElement = '<custom:SessionId>SESSION-12345</custom:SessionId>';
+            const options = {
+                passwordType: 'PasswordDigest',
+                hasTimeStamp: true,
+                hasNonce: true,
+                hasTokenCreated: true,
+                actor: 'http://example.com/actor',
+                mustUnderstand: true,
+                appendElement: customElement,
+                envelopeKey: 'soapenv'
+            };
+            const security = new (WSSecurity as any)('apiuser', 'secretpass', options);
+            const xml = security.toXML();
+            
+            expect(isWellFormedXml(xml)).toBe(true);
+            expect(xml).toContain('PasswordDigest');
+            expect(xmlContainsElement(xml, 'wsu:Timestamp')).toBe(true);
+            expect(xmlContainsElement(xml, 'wsse:Nonce')).toBe(true);
+            expect(xml).toContain('soapenv:actor="http://example.com/actor"');
+            expect(xml).toContain('soapenv:mustUnderstand="1"');
+            expect(xml).toContain(customElement);
+        });
+    });
 });

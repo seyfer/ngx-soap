@@ -426,8 +426,8 @@ describe('WSDL - Core Functionality', () => {
         });
     });
 
-    describe('Phase 4A Bug Fixes', () => {
-        describe('Task 4.1: Handle Missing Message Definitions', () => {
+    describe('WSDL Parsing Robustness', () => {
+        describe('Handle Missing Message Definitions', () => {
             it('should handle WSDL with missing message definitions gracefully', () => {
                 const wsdlWithMissingMessage = `<?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
@@ -605,7 +605,7 @@ describe('WSDL - Core Functionality', () => {
             });
         });
 
-        describe('Task 4.2: Prevent $type Mutation', () => {
+        describe('Prevent $type Mutation', () => {
             it('should handle multiple sequential objectToDocumentXML calls without schema corruption', (done) => {
                 const wsdlXml = `<?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
@@ -813,7 +813,7 @@ describe('WSDL - Core Functionality', () => {
             });
         });
 
-        describe('Task 4.3: Multi-Service/Multi-Port Support', () => {
+        describe('Multi-Service/Multi-Port Support', () => {
             it('should store serviceName option correctly', () => {
                 const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { serviceName: 'MyService' });
                 expect(wsdl.options.serviceName).toBe('MyService');
@@ -840,7 +840,7 @@ describe('WSDL - Core Functionality', () => {
             });
         });
 
-        describe('Task 4.4: ComplexContent with RestrictionElement', () => {
+        describe('ComplexContent with RestrictionElement', () => {
             it('should handle ComplexContent with restriction base', (done) => {
                 const wsdlWithRestriction = `<?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
@@ -985,7 +985,7 @@ describe('WSDL - Core Functionality', () => {
             });
         });
 
-        describe('Task 4.5: overrideElementKey Option', () => {
+        describe('Element Key Override (overrideElementKey)', () => {
             it('should store overrideElementKey option correctly', () => {
                 const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
                     overrideElementKey: { 'OldName': 'NewName' }
@@ -1012,7 +1012,7 @@ describe('WSDL - Core Functionality', () => {
             });
         });
 
-        describe('Task 4.6: envelopeSoapUrl Option', () => {
+        describe('Custom Envelope URL (envelopeSoapUrl)', () => {
             it('should store envelopeSoapUrl option correctly', () => {
                 const customUrl = 'http://custom.soap.namespace.com/envelope/';
                 const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', { 
@@ -1035,7 +1035,7 @@ describe('WSDL - Core Functionality', () => {
             });
         });
 
-        describe('Task 4.15: encoding Option (Phase 4C)', () => {
+        describe('Response Encoding (encoding)', () => {
             it('should use default encoding utf-8 when not specified', () => {
                 const wsdl = new (WSDL as any)(loadFixture('minimal.wsdl'), 'http://example.com/test.wsdl', {});
                 expect(wsdl.options.encoding).toBe('utf-8');
@@ -1060,7 +1060,7 @@ describe('WSDL - Core Functionality', () => {
             });
         });
 
-        describe('Task 4.16: wsdlCache Option (Phase 4C)', () => {
+        describe('Custom WSDL Cache (wsdlCache)', () => {
             it('should accept custom wsdlCache implementation', () => {
                 // Create a simple custom cache
                 const customCache = {

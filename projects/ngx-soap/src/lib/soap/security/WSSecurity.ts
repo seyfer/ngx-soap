@@ -11,7 +11,7 @@ var validPasswordTypes = ['PasswordDigest', 'PasswordText'];
 
 /**
  * Generate a UUID using native crypto API with fallback for non-secure contexts
- * Phase 4B - Task 4.9: Dynamic timestamp IDs
+ * Uses crypto.randomUUID() when available, with fallback for HTTP contexts
  */
 function generateUUID(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -57,6 +57,10 @@ export function WSSecurity(username, password, options) {
   if (options.mustUnderstand != null) {
     this._mustUnderstand = !!options.mustUnderstand;
   }
+  // Custom SOAP envelope prefix (e.g., 'SOAP-ENV', 'soapenv')
+  this._envelopeKey = options.envelopeKey || 'soap';
+  // Custom XML to append to security header (e.g., session tokens)
+  this._appendElement = options.appendElement || '';
 }
 
 WSSecurity.prototype.toXML = function() {
@@ -77,7 +81,7 @@ WSSecurity.prototype.toXML = function() {
   var timeStampXml = '';
   if (this._hasTimeStamp) {
     var expires = getDate( new Date(now.getTime() + (1000 * 600)) );
-    // Phase 4B - Task 4.9: Use unique ID instead of timestamp for better uniqueness
+    // Use unique ID for timestamp (dynamic UUID generation)
     var timestampId = 'Timestamp-' + generateId();
     timeStampXml = "<wsu:Timestamp wsu:Id=\"" + timestampId + "\">" +
       "<wsu:Created>"+created+"</wsu:Created>" +
@@ -103,9 +107,10 @@ WSSecurity.prototype.toXML = function() {
       "<wsse:Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">" + nonce + "</wsse:Nonce>";
   }
 
-  // Phase 4B - Task 4.10: Add proper spacing after xmlns:wsu to prevent xmldom warning
-  return "<wsse:Security " + (this._actor ? "soap:actor=\"" + this._actor + "\" " : "") +
-    (this._mustUnderstand ? "soap:mustUnderstand=\"1\" " : "") +
+  // Proper spacing after xmlns attributes to prevent xmldom warnings
+  // Use envelopeKey for actor/mustUnderstand attributes
+  return "<wsse:Security " + (this._actor ? this._envelopeKey + ":actor=\"" + this._actor + "\" " : "") +
+    (this._mustUnderstand ? this._envelopeKey + ":mustUnderstand=\"1\" " : "") +
     "xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" " +
     "xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">" +
     timeStampXml +
@@ -114,6 +119,7 @@ WSSecurity.prototype.toXML = function() {
     password +
     (this._hasTokenCreated ? "<wsu:Created>" + created + "</wsu:Created>" : "") +
     "</wsse:UsernameToken>" +
+    this._appendElement +
     "</wsse:Security>";
 };
 

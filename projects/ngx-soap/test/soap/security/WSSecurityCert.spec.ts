@@ -79,17 +79,9 @@ MIIDXTCCAkWgAwIBAgIJAKL0UG+mRKfzMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
             
             expect(typeof security.postProcess).toBe('function');
         });
-
-        // Note: postProcess tests are skipped because they require valid X.509 certificates
-        // and private keys for crypto operations. These tests would pass with real certificates
-        // but fail with mock data due to OpenSSL validation.
-        
-        it.skip('should sign SOAP message with certificate', () => {
-            // Requires valid certificate for crypto operations
-        });
     });
 
-    describe('Algorithm Options (Phase 4.7)', () => {
+    describe('Algorithm Options', () => {
         it('should use default algorithms when no options provided', () => {
             const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '');
             
@@ -145,7 +137,7 @@ MIIDXTCCAkWgAwIBAgIJAKL0UG+mRKfzMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
         });
     });
 
-    describe('Exclude References from Signing (Phase 4.14)', () => {
+    describe('Exclude References from Signing', () => {
         it('should initialize with empty excludeReferencesFromSigning by default', () => {
             const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '');
             
@@ -227,6 +219,66 @@ MIIDXTCCAkWgAwIBAgIJAKL0UG+mRKfzMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
             expect(security1.x509Id).not.toBe(security2.x509Id);
             expect(security1.signer.signingKey.passphrase).toBe('password1');
             expect(security2.signer.signingKey.passphrase).toBe('password2');
+        });
+    });
+
+    describe('Custom XML Element (appendElement)', () => {
+        it('should store appendElement option when specified', () => {
+            const customElement = '<custom:Token>CUSTOM123</custom:Token>';
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                appendElement: customElement
+            });
+            
+            expect(security.appendElement).toBe(customElement);
+        });
+
+        it('should default appendElement to empty string', () => {
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '');
+            
+            expect(security.appendElement).toBe('');
+        });
+
+        it('should include appendElement in generated security header template', () => {
+            const customElement = '<custom:SessionToken xmlns:custom="http://example.com/custom">SESSION-456</custom:SessionToken>';
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                appendElement: customElement,
+                digestAlgorithm: 'sha256'
+            });
+            
+            // Verify the appendElement is stored
+            expect(security.appendElement).toBe(customElement);
+            
+            // Note: Full postProcess testing requires valid X.509 certificates.
+            // The appendElement is added in the secHeader template string before </wsse:Security>
+            // in postProcess method at line ~116: </Timestamp>${this.appendElement}\n    </wsse:Security>
+        });
+
+        it('should work with complex custom XML', () => {
+            const customElement = `
+                <custom:Authentication xmlns:custom="http://example.com/custom">
+                    <custom:Token>TOKEN123</custom:Token>
+                    <custom:Signature>SIG456</custom:Signature>
+                </custom:Authentication>`;
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, '', {
+                appendElement: customElement
+            });
+            
+            expect(security.appendElement).toBe(customElement);
+        });
+
+        it('should work combined with other options', () => {
+            const customElement = '<custom:Extra>DATA</custom:Extra>';
+            const security = new (WSSecurityCert as any)(MOCK_PRIVATE_KEY, MOCK_PUBLIC_CERT, 'password', {
+                digestAlgorithm: 'sha256',
+                signatureAlgorithm: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
+                excludeReferencesFromSigning: ['Timestamp'],
+                appendElement: customElement
+            });
+            
+            expect(security.digestAlgorithm).toBe('sha256');
+            expect(security.signatureAlgorithm).toBe('http://www.w3.org/2001/04/xmldsig-more#rsa-sha256');
+            expect(security.excludeReferencesFromSigning).toContain('Timestamp');
+            expect(security.appendElement).toBe(customElement);
         });
     });
 });

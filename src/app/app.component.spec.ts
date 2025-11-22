@@ -57,7 +57,7 @@ describe('AppComponent', () => {
         });
 
         it('should handle createClient errors gracefully', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
             const error = new Error('WSDL load error');
             const service = {
                 createClient: jest.fn().mockRejectedValue(error)
@@ -66,7 +66,7 @@ describe('AppComponent', () => {
             new AppComponent(service);
             await new Promise(resolve => setTimeout(resolve, 0));
             
-            expect(consoleSpy).toHaveBeenCalledWith('Error', error);
+            expect(consoleSpy).toHaveBeenCalledWith('Error creating SOAP client:', error);
             consoleSpy.mockRestore();
         });
 
@@ -146,14 +146,14 @@ describe('AppComponent', () => {
         });
 
         it('should handle errors', () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
             const error = new Error('SOAP error');
             mockClient.Add.mockReturnValue(throwError(() => error));
             
             component.sum();
             
             setTimeout(() => {
-                expect(consoleSpy).toHaveBeenCalledWith(error);
+                expect(consoleSpy).toHaveBeenCalledWith('Error calling Add method:', error);
                 consoleSpy.mockRestore();
             }, 0);
         });
@@ -245,14 +245,14 @@ describe('AppComponent', () => {
         });
 
         it('should handle errors', () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
             const error = new Error('SOAP error');
             mockClient.Subtract.mockReturnValue(throwError(() => error));
             
             component.subtract();
             
             setTimeout(() => {
-                expect(consoleSpy).toHaveBeenCalledWith(error);
+                expect(consoleSpy).toHaveBeenCalledWith('Error calling Subtract method:', error);
                 consoleSpy.mockRestore();
             }, 0);
         });

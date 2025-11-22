@@ -17,6 +17,11 @@ import { WSSecurityCert } from './WSSecurityCert';
  * @param options.hasTimeStamp - Include timestamp in security header (default: true)
  * @param options.hasNonce - Include nonce in security header
  * @param options.hasTokenCreated - Include created timestamp in token (default: true)
+ * @param options.digestAlgorithm - Digest algorithm for signing (default: 'sha256')
+ * @param options.signatureAlgorithm - Signature algorithm for signing
+ * @param options.excludeReferencesFromSigning - Array of element names to exclude from signing
+ * @param options.appendElement - Custom XML to append to security header
+ * @param options.envelopeKey - Custom SOAP envelope prefix (default: 'soap')
  */
 export function WSSecurityCertWithToken(
   privatePEM: string | Buffer,
@@ -26,14 +31,15 @@ export function WSSecurityCertWithToken(
 ) {
   options = options || {};
   
-  // Initialize certificate security with algorithm and exclusion options
+  // Initialize certificate security with all supported options
   this.cert = new (WSSecurityCert as any)(privatePEM, publicP12PEM, password, {
     digestAlgorithm: options.digestAlgorithm,
     signatureAlgorithm: options.signatureAlgorithm,
-    excludeReferencesFromSigning: options.excludeReferencesFromSigning
+    excludeReferencesFromSigning: options.excludeReferencesFromSigning,
+    appendElement: options.appendElement
   });
   
-  // Initialize username token security if credentials provided
+  // Initialize username token security with all supported options
   if (options.username && options.password) {
     this.token = new (WSSecurity as any)(options.username, options.password, {
       passwordType: options.passwordType,
@@ -41,7 +47,9 @@ export function WSSecurityCertWithToken(
       hasNonce: options.hasNonce,
       hasTokenCreated: options.hasTokenCreated,
       actor: options.actor,
-      mustUnderstand: options.mustUnderstand
+      mustUnderstand: options.mustUnderstand,
+      envelopeKey: options.envelopeKey,
+      appendElement: options.appendElement
     });
   }
 }

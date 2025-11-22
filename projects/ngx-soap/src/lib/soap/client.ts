@@ -133,7 +133,7 @@ Client.prototype._initializeServices = function(endpoint) {
     const definitions = this.wsdl.definitions,
         services = definitions.services;
     
-    // Support selecting specific service (Phase 4A - Task 4.3)
+    // Support selecting specific service from WSDL
     const selectedServiceName = this.wsdl.options.serviceName;
     
     if (selectedServiceName) {
@@ -160,7 +160,7 @@ Client.prototype._initializeOptions = function(options) {
     this.wsdl.options.envelopeKey = options.envelopeKey || 'soap';
     this.wsdl.options.preserveWhitespace = !!options.preserveWhitespace;
     
-    // Phase 4A - Task 4.3: Support selecting specific service/port
+    // Support selecting specific service/port from WSDL
     this.wsdl.options.serviceName = options.serviceName;
     this.wsdl.options.portName = options.portName;
     
@@ -183,7 +183,7 @@ Client.prototype._defineService = function(service, endpoint) {
     const ports = service.ports,
         def = {};
     
-    // Support selecting specific port (Phase 4A - Task 4.3)
+    // Support selecting specific port from service
     const selectedPortName = this.wsdl.options.portName;
     
     if (selectedPortName) {
@@ -249,7 +249,7 @@ Client.prototype._invoke = function(method, args, location, options, extraHeader
         },
         xmlnsSoap = 'xmlns:' + envelopeKey + '="http://schemas.xmlsoap.org/soap/envelope/"';
 
-    // Phase 4B - Task 4.6: Support custom SOAP envelope URL
+    // Support custom SOAP envelope URL
     if (this.wsdl.options.envelopeSoapUrl && !this.wsdl.options.forceSoap12Headers) {
         xmlnsSoap = 'xmlns:' + envelopeKey + '="' + this.wsdl.options.envelopeSoapUrl + '"';
     }
@@ -484,8 +484,6 @@ Client.prototype._invoke = function(method, args, location, options, extraHeader
 };
 
 Client.prototype.call = function(method: string, body: any, options?: any, extraHeaders?: any): Observable<any> {
-    // console.log('call', method);
-
     if (!this[method]) {
         return throwError(`Method ${method} not found`);
     }

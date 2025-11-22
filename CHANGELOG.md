@@ -1,31 +1,97 @@
 # CHANGELOG
 
-## 0.17.1 (Unreleased)
+## 0.18.1 (Unreleased)
 
-### New Features
+### Phase 5: Security Protocol Enhancements
+
+#### New Features
+- **`appendElement` option** for `WSSecurity`: Allows custom XML elements to be appended to the WS-Security header
+- **`appendElement` option** for `WSSecurityCert`: Enables custom XML in certificate-based security headers
+- **`envelopeKey` option** for `WSSecurity`: Support for custom SOAP envelope prefixes (e.g., `SOAP-ENV`, `soapenv`)
+- Enhanced `WSSecurityCertWithToken` to pass through `appendElement` and `envelopeKey` options
+
+#### Examples
+```typescript
+// Custom XML in WSSecurity
+const wsSecurity = new WSSecurity('user', 'pass', {
+  appendElement: '<custom:Token>ABC123</custom:Token>',
+  envelopeKey: 'SOAP-ENV'
+});
+
+// Custom XML in WSSecurityCert
+const wsSecurityCert = new WSSecurityCert(privateKey, publicKey, password, {
+  appendElement: '<custom:SessionToken>XYZ789</custom:SessionToken>',
+  digestAlgorithm: 'sha256'
+});
+```
+
+#### Technical Improvements
+- Updated `WSSecurityCert` to use xml-crypto's object-based `addReference` API
+- Added `canonicalizationAlgorithm` to signer configuration
+- Enhanced digest algorithm URL formatting
+
+#### Testing
+- Added 14 new comprehensive tests (249 total, all passing)
+- Tests for `appendElement` with various XML structures
+- Tests for `envelopeKey` with different SOAP prefixes
+- Combined feature tests
+
+#### Documentation
+- Created Phase 5 analysis documentation
+- Updated TODO.md with Phase 5 status
+- Comprehensive comparison tables
+- Implementation guides
+
+**Feature Parity**: 90% with node-soap v1.6.0  
+**Breaking Changes**: None ✅  
+**Backward Compatible**: Yes ✅
+
+---
+
+## 0.18.0 (2025-11-22)
+
+### Phase 1-4: Major Backport Release
+
+#### New Features
 - **Security Protocols**: Added `WSSecurityCertWithToken` and `WSSecurityPlusCert` for combined authentication methods
-- **Configuration Options**: Added 8 new options (`useEmptyTag`, `preserveWhitespace`, `normalizeNames`, `suppressStack`, `forceUseSchemaXmlns`, `envelopeKey`, `overridePromiseSuffix`, `exchangeId`)
+- **Configuration Options**: Added 8+ new options (`useEmptyTag`, `preserveWhitespace`, `normalizeNames`, `suppressStack`, `forceUseSchemaXmlns`, `envelopeKey`, `overridePromiseSuffix`, `exchangeId`)
+- **Multi-Service/Port Support**: Select specific service and port from WSDL files
 - **Event Tracking**: Enhanced client events with Exchange ID (EID) for request/response correlation
 - **TypeScript**: Added comprehensive JSDoc comments to all configuration options
+- **Security Algorithm Options**: Custom `digestAlgorithm` and `signatureAlgorithm` for signing
+- **Custom WSDL Cache**: Support for custom cache implementations via `IWSDLCache` interface
+- **Element Overrides**: `overrideElementKey` option for element renaming
+- **Custom Envelope URL**: `envelopeSoapUrl` option for custom envelope namespace URLs
+- **Encoding Options**: `encoding` option for response encoding
 
-### Bug Fixes & Performance
+#### Bug Fixes & Performance
 - Fixed empty SOAP body handling for null/undefined responses and one-way operations
 - Fixed SOAP Fault handling with full SOAP 1.1/1.2 support, added `returnFault` option
 - Fixed element reference resolution (`$ref` with `maxOccurs`/`minOccurs`)
-- Fixed namespace handling for arrays
+- Fixed namespace handling for arrays, added `namespaceArrayElements` option
+- Fixed `$type` mutation in schema objects (immutable deep cloning)
+- Fixed missing message definitions in WSDLs (graceful handling)
+- Fixed ComplexContent with RestrictionElement
+- Fixed hardcoded timestamp IDs (use dynamic UUIDs)
+- Fixed `xmlns:wsu` spacing in WSSecurity
 - Optimized namespace context using `Map` for faster lookups
 
-### Security & Dependencies
+#### Security & Dependencies
 - **CRITICAL**: Updated `xml-crypto` v2.1.6 → v6.1.2 (9 years of security fixes)
 - Removed `uuid` dependency, replaced with native `crypto.randomUUID()`
 - Updated `sax` to v1.4.1, `lodash` to v4.17.21
 - Added `debug` package v4.4.3 for enhanced logging
 - Optimized `trim()` function using native `String.trim()`
 
-### Testing & Documentation
-- Added 50 new tests (199 total, all passing)
+#### Testing & Documentation
+- Added 86 new tests (235 total, all passing)
 - Updated README with configuration options and security protocols examples
 - Comprehensive documentation for all new features
+- Created soap-upgrade-plan documentation folder
+
+**Feature Parity**: 89% with node-soap v1.6.0  
+**Breaking Changes**: None ✅  
+**Backward Compatible**: Yes ✅
 
 ## 0.17.0
 
