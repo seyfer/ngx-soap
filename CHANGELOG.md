@@ -6,6 +6,11 @@
 - Package renaming finalization (ngx-soap to ngx-soap-next)
 - Build and dependency fixes
 
+## 0.9.0
+
+- Preparatory updates for Angular 12 migration
+- Build system improvements
+
 ## 0.8.0
 
 - Prepared for Angular 11 migration
