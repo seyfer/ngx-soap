@@ -7,13 +7,30 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import * as assert from 'assert';
 import { findPrefix } from './utils';
 import * as _ from 'lodash';
-import uuid4 from 'uuid/v4';
 import { from, Observable, throwError } from 'rxjs';
 import { mergeMap, map } from 'rxjs/operators';
 import { Multipart } from './multipart';
 import { SoapAttachment } from './soapAttachment';
+import debugBuilder from 'debug';
+
+const debug = debugBuilder('ngx-soap:client');
 
 const nonIdentifierChars = /[^a-z$_0-9]/i;
+
+/**
+ * Generate a UUID using native crypto API with fallback for non-secure contexts
+ */
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback for non-secure contexts (HTTP)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 export const Client = function(wsdl, endpoint, options) {
     options = options || {};
@@ -172,6 +189,7 @@ Client.prototype._defineMethod = function(method, location) {
 };
 
 Client.prototype._invoke = function(method, args, location, options, extraHeaders): Observable<any> {
+    debug('Invoking SOAP method: %s', method.$name);
     let self = this,
         name = method.$name,
         input = method.input,
@@ -293,8 +311,8 @@ Client.prototype._invoke = function(method, args, location, options, extraHeader
             }
 
             if (options.forceMTOM || soapAttachments.length > 0) {
-                const start = uuid4();
-                const boundry = uuid4();
+                const start = generateUUID();
+                const boundry = generateUUID();
                 let action = null;
                 if (headers['Content-Type'].indexOf('action') > -1) {
                     for (const ct of headers['Content-Type'].split('; ')) {

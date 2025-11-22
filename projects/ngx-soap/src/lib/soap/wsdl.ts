@@ -9,11 +9,14 @@
 
 import * as sax from 'sax';
 import { HttpClient } from '@angular/common/http';
-import { NamespaceContext }  from './nscontext';
+import { NamespaceContext }  from './nscontext';
 import * as _ from 'lodash';
 import * as utils from './utils';
 import * as url from 'url';
 import { ok as assert } from 'assert';
+import debugBuilder from 'debug';
+
+const debug = debugBuilder('ngx-soap:wsdl');
 
 const stripBom = (x: string): string => {
   // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
@@ -88,11 +91,8 @@ function xmlEscape(obj) {
   return obj;
 }
 
-let trimLeft = /^[\s\xA0]+/;
-let trimRight = /[\s\xA0]+$/;
-
-function trim(text) {
-  return text.replace(trimLeft, '').replace(trimRight, '');
+function trim(text: string): string {
+  return text.trim();
 }
 
 function deepMerge(destination, source) {
@@ -2198,6 +2198,7 @@ WSDL.prototype.findChildSchemaObject = function (parameterTypeObj, childName, ba
 };
 
 WSDL.prototype._parse = function (xml) {
+  debug('Parsing WSDL XML, length: %d', xml?.length || 0);
   let self = this,
     p = sax.parser(true),
     stack = [],

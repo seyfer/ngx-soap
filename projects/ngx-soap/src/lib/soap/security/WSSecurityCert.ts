@@ -4,10 +4,8 @@
 // var path = require('path');
 // var ejs = require('ejs');
 // var SignedXml = require('xml-crypto').SignedXml;
-// var uuid4 = require('uuid/v4');
 
 import { SignedXml } from 'xml-crypto';
-import uuid4 from 'uuid/v4';
 
 let wsseSecurityHeaderTemplate;
 let wsseSecurityTokenTemplate;
@@ -34,8 +32,23 @@ function insertStr(src, dst, pos) {
   return [dst.slice(0, pos), src, dst.slice(pos)].join('');
 }
 
+/**
+ * Generate a UUID using native crypto API with fallback for non-secure contexts
+ */
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback for non-secure contexts (HTTP)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 function generateId() {
-  return uuid4().replace(/-/gm, '');
+  return generateUUID().replace(/-/gm, '');
 }
 
 export function WSSecurityCert(privatePEM, publicP12PEM, password) {

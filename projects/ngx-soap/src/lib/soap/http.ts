@@ -7,7 +7,9 @@ import * as url from 'url';
 const req = null; // require('request');
 import * as httpNtlm from 'httpntlm';
 import { Buffer } from 'buffer';
+import debugBuilder from 'debug';
 
+const debug = debugBuilder('ngx-soap:http');
 const VERSION = '0.0.0'; //require('../package.json').version;
 
 /**
