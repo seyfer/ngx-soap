@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 0.17.0
+
+- Updated to Angular 17 compatibility
+- Updated all @angular packages to version 17
+- **Breaking Change**: Replaced Jasmine with Jest for testing
+- Added comprehensive test coverage for SOAP client operations
+- Removed deprecated e2e tests
+- Updated all dependencies to latest versions
+- Fixed deprecation warnings
+- Example app: Replaced @angular/flex-layout with Tailwind CSS
+- Updated README documentation
+- Improved .gitignore configuration
+
 ## 0.5.0-beta.7
 
 Client events have been removed due to problems with Angular prod bundle. See issue [#29](https://github.com/lula/ngx-soap/issues/29).
