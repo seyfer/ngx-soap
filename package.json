@@ -1,6 +1,6 @@
 {
   "name": "ngx-soap-next",
-  "version": "0.17.2",
+  "version": "0.18.0",
   "description": "SOAP service for Angular",
   "main": "src/index.js",
   "module": "src/index.js",
@@ -30,7 +30,7 @@
   },
   "keywords": [
     "Angular",
-    "Angular17",
+    "Angular18",
     "@angular",
     "SOAP",
     "WSDL"
@@ -66,7 +66,6 @@
     "core-js": "^2.5.4",
     "crypto-js": "^4.2.0",
     "debug": "^4.4.3",
-    "eslint": "^8.52.0",
     "events": "^3.0.0",
     "httpntlm": "^1.7.6",
     "lodash": "^4.17.21",
@@ -81,14 +80,16 @@
     "zone.js": "^0.14.2"
   },
   "devDependencies": {
+    "@angular-builders/custom-webpack": "^18.0.0",
     "@angular/cli": "^18.2.21",
     "@angular/language-service": "^18.2.14",
     "@types/estree": "^1.0.5",
     "@types/jest": "^30.0.0",
-    "@types/node": "^16.18.71",
+    "@types/node": "^18.19.130",
     "autoprefixer": "^10.4.22",
     "codelyzer": "^6.0.2",
     "crypto-browserify": "^3.12.1",
+    "eslint": "^8.57.1",
     "global": "^4.4.0",
     "jest": "^29.7.0",
     "jest-preset-angular": "^14.2.4",

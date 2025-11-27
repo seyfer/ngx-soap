@@ -1,5 +1,55 @@
 # CHANGELOG
 
+## 0.18.0
+
+### Angular 18 Upgrade
+
+**Framework Updates**
+- Updated to Angular 18 compatibility
+- Updated all @angular packages to version 18.2.14
+- Updated @angular/cli to 18.2.21
+- Updated @angular/material and @angular/cdk to 18.2.14
+
+**Configuration Updates**
+- Fixed `angular.json` tsconfig.spec.json path references
+- Removed obsolete Karma test configurations (project uses Jest)
+- Added custom webpack configuration for webpack 5 polyfills
+- Integrated `@angular-builders/custom-webpack` for browser builds
+- Updated `allowedCommonJsDependencies` to include `xml-crypto` and `debug`
+
+**Webpack 5 Compatibility Fixes**
+- Added Node.js core module polyfills for browser compatibility:
+    - `crypto-browserify` for crypto operations (required by xml-crypto)
+    - `stream-browserify` for stream operations
+    - `vm-browserify` for VM operations (required by asn1.js)
+    - `global` polyfill for global object
+- Configured webpack ProvidePlugin for automatic injection of `global`, `process`, and `Buffer`
+- Updated `src/polyfills.ts` with explicit global polyfills
+- Created `src/webpack.config.js` with fallback configuration
+
+**Bug Fixes**
+- Fixed `options` parameter handling in `Client._invoke()` method
+    - Previously crashed when calling SOAP methods without options parameter
+    - Now safely defaults to empty object `{}` when options not provided
+    - Resolves "Cannot read properties of undefined (reading 'exchangeId')" error
+
+**Dependency Updates**
+- `tslib`: 2.6.3 → 2.8.1
+- `url`: 0.11.3 → 0.11.4
+- `eslint`: 8.56.0 → 8.57.1
+- `@types/node`: 16.18.76 → 18.19.130 (upgraded to Node 18 LTS types)
+
+**New Dev Dependencies**
+- `@angular-builders/custom-webpack@18` - Custom webpack configuration support
+- `crypto-browserify` - Browser polyfill for Node.js crypto module
+- `stream-browserify` - Browser polyfill for Node.js stream module
+- `vm-browserify` - Browser polyfill for Node.js vm module
+- `global` - Browser polyfill for Node.js global object
+
+**Breaking Changes**: None ✅
+
+---
+
 ## 0.17.2
 
 ### Webpack 5 Compatibility Fixes
