@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -18,19 +18,12 @@ export const ANGULAR_MATERIAL_MODULES = [
   MatProgressBarModule, MatFormFieldModule
 ];
 
-@NgModule({
-  declarations: [
-    AppComponent
-  ],
-  imports: [
-    BrowserModule,
-    FormsModule,
-    NgxSoapModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    ...ANGULAR_MATERIAL_MODULES
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
-})
+@NgModule({ declarations: [
+        AppComponent
+    ],
+    bootstrap: [AppComponent], imports: [BrowserModule,
+        FormsModule,
+        NgxSoapModule,
+        BrowserAnimationsModule,
+        ...ANGULAR_MATERIAL_MODULES], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class AppModule { }
