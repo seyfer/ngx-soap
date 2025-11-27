@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { NgxSoapService, Client, ISoapMethodResponse } from '../../projects/ngx-soap/src/public_api';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css'],
+    standalone: false
 })
 export class AppComponent {
   title = 'SOAP Calculator app';
