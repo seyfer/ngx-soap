@@ -1,5 +1,56 @@
 # CHANGELOG
 
+## 0.19.0
+
+### Angular 19 Upgrade
+
+**Framework Updates**
+- Updated to Angular 19 compatibility
+- Updated all @angular packages to version 19.2.16
+- Updated @angular/cli to 19.2.19
+- Updated @angular/material and @angular/cdk to 19.2.19
+- Updated @angular/build to 19.2.19
+- Updated ng-packagr to 19.2.2
+
+**TypeScript & Core Dependencies**
+- Updated TypeScript to 5.8.3 (Angular 19 compatibility requirement)
+- Updated zone.js to 0.15.1 (Angular 19.2.16 requirement)
+
+**Testing Infrastructure**
+- Updated Jest from 29.7.0 to 30.2.0
+- Updated jest-preset-angular from 14.2.4 to 15.0.3
+- Added jest-environment-jsdom as separate dev dependency (required by Jest 30+)
+- All 269 tests passing ✅
+
+**Build Tools**
+- Updated @angular-builders/custom-webpack from 18.0.0 to 19.0.1
+
+**Type Definitions**
+- Updated @types/node from 18.19.130 to 24.10.1
+- Updated @types/jest to 30.0.0
+
+**Dependency Updates**
+- Updated stream: 0.0.2 → 0.0.3
+
+**Library Package Updates**
+- Updated peerDependencies to require Angular ^19.0.0
+- Updated keywords from "Angular18" to "Angular19"
+- Synchronized zone.js and stream versions between root and library packages
+
+**Angular 19 Migrations Applied**
+- Added `standalone: false` to non-standalone components (automatic migration)
+- Verified compatibility with all Angular 19 migration requirements
+- No manual code changes required ✅
+
+**Breaking Changes**: None ✅
+
+**Migration Notes**
+- All Angular 19 optional migrations were reviewed and applied where necessary
+- TypeScript version capped at 5.8.x due to Angular 19.2.16 peer dependency requirements
+- zone.js version must remain at 0.15.x for Angular 19.2.16 compatibility
+
+---
+
 ## 0.18.0
 
 ### Angular 18 Upgrade
