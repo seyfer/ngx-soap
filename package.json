@@ -1,6 +1,6 @@
 {
   "name": "ngx-soap-next",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "description": "SOAP service for Angular",
   "main": "src/index.js",
   "module": "src/index.js",
@@ -30,7 +30,7 @@
   },
   "keywords": [
     "Angular",
-    "Angular18",
+    "Angular19",
     "@angular",
     "SOAP",
     "WSDL"
@@ -79,7 +79,7 @@
     "zone.js": "^0.15.1"
   },
   "devDependencies": {
-    "@angular-builders/custom-webpack": "^18.0.0",
+    "@angular-builders/custom-webpack": "^19.0.1",
     "@angular/build": "^19.2.19",
     "@angular/cli": "^19.2.19",
     "@angular/language-service": "^19.2.16",
