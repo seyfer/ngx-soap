@@ -11,11 +11,8 @@
       "schematics": {},
       "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "customWebpackConfig": {
-              "path": "src/webpack.config.js"
-            },
             "aot": true,
             "outputPath": "dist/ngx-soap-app",
             "index": "src/index.html",
@@ -42,9 +39,7 @@
               "buffer",
               "crypto-js/enc-base64",
               "crypto-js/sha1",
-              "sax",
-              "xml-crypto",
-              "debug"
+              "sax"
             ]
           },
           "configurations": {
@@ -75,7 +70,7 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-builders/custom-webpack:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
           "options": {},
           "configurations": {
             "production": {
@@ -91,27 +86,6 @@
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
             "buildTarget": "ngx-soap-app:build"
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "src/tsconfig.spec.json",
-            "karmaConfig": "src/karma.conf.js",
-            "styles": [
-              {
-                "input": "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-                "inject": true
-              },
-              "src/styles.css"
-            ],
-            "scripts": [],
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ]
           }
         }
       }
@@ -136,15 +110,6 @@
             "development": {}
           },
           "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "projects/ngx-soap/src/test.ts",
-            "polyfills": "projects/ngx-soap/src/polyfills.ts",
-            "tsConfig": "projects/ngx-soap/tsconfig.spec.json",
-            "karmaConfig": "projects/ngx-soap/karma.conf.js"
-          }
         }
       }
     }
