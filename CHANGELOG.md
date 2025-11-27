@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## 0.17.2
+
+### Webpack 5 Compatibility Fixes
+
+**Build Configuration**
+
+- Added custom webpack configuration for Node.js polyfills (crypto, stream, vm, global)
+- Integrated `@angular-builders/custom-webpack@17` for browser builds
+- Updated CommonJS dependencies whitelist (xml-crypto, debug)
+
+**Bug Fixes**
+
+- Fixed `Client._invoke()` options parameter handling (prevents "undefined reading 'exchangeId'" error)
+
+**Dependency Updates**
+
+- `tslib`: 2.6.2 → 2.8.1
+- `url`: 0.11.3 → 0.11.4
+
+**New Dev Dependencies**
+
+- `crypto-browserify`, `stream-browserify`, `vm-browserify`, `global` - Browser polyfills
+
+**Breaking Changes**: None ✅
+
+---
+
 ## 0.17.1
 
 > **📊 Feature Parity**: 100% core features with node-soap v1.6.0 ✅  
@@ -8,11 +35,13 @@
 ### Major Backport from node-soap (v1.0.0 → v1.6.0)
 
 **Security & Dependencies**
+
 - **CRITICAL**: Updated `xml-crypto` v2.1.6 → v6.1.2
 - Removed `uuid`, using native `crypto.randomUUID()` with fallback
 - Updated `sax` v1.4.1, `lodash` v4.17.21, `debug` v4.4.3
 
 **New Security Protocols**
+
 - `WSSecurityCertWithToken` - Certificate + Username Token
 - `WSSecurityPlusCert` - Combined WS-Security protocols
 - `appendElement` option for WSSecurity & WSSecurityCert (custom XML injection)
@@ -21,12 +50,14 @@
 - `excludeReferencesFromSigning` option
 
 **Configuration Options** (13 new)
+
 - `returnFault`, `namespaceArrayElements`, `useEmptyTag`, `preserveWhitespace`
 - `normalizeNames`, `suppressStack`, `forceUseSchemaXmlns`, `envelopeKey`
 - `overridePromiseSuffix`, `exchangeId`, `serviceName`, `portName`
 - `overrideElementKey`, `envelopeSoapUrl`, `encoding`, `wsdlCache` (IWSDLCache)
 
 **Bug Fixes**
+
 - Empty SOAP body handling (null/undefined responses, one-way operations)
 - SOAP Fault 1.1/1.2 support with `returnFault` option
 - Element reference (`$ref`) resolution with maxOccurs/minOccurs
@@ -38,15 +69,18 @@
 - `xmlns:wsu` spacing fix
 
 **Performance**
+
 - Map-based namespace lookups (faster than Object)
 - Native `String.trim()` (2x faster)
 
 **Advanced Features**
+
 - Function-based SOAP headers with context (`_processSoapHeader`)
 - Schema merge for duplicate namespaces (WSDL with multiple imports)
 - Namespace fallback for schemas without targetNamespace
 
 **Testing**
+
 - Added 98 new tests → 247 total (all passing)
 
 **Breaking Changes**: None ✅
@@ -164,6 +198,7 @@ Project recreated with Angualr 6 CLI.
 ...
 
 ## 0.2.2-beta6
+
 Call operation with client method.
 
 ## 0.2.2-beta3
@@ -172,12 +207,12 @@ Call operation with client method.
 
 Web Service operations have no callback anymore. Callback has been replaced by a Promise.
 
-Before: 
+Before:
 
       (client as any).Add(input, (err, wsurl: string, headers: any, xml: string) => ... )
 
 After:
-      
+
       client.operation('Add', body).then((operation: Operation) => ... )
       // or
       (client as any).Add(body).then((operation: Operation) => ... )
