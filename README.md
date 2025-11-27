@@ -2,59 +2,191 @@
 
 Simple SOAP client for Angular based on amazing [node-soap](https://github.com/vpulim/node-soap).
 
+✨ **Now with Angular 19 support!** Featuring modern standalone components, signals, and improved developer experience.
+
 Project has been recreated from scratch with Angular CLI.
 
-Please be aware, this package version number will be equal to the corresponding Angular version
-0.10.x = v10, 0.11.x = v11, ... 0.16.x = v16, 0.17.x = v17
+Please be aware, this package version number will be equal to the corresponding Angular version:
+0.10.x = v10, 0.11.x = v11, ... 0.17.x = v17, 0.18.x = v18, **0.19.x = v19**
 
-## npm
+## Installation
 
-1. install ngx-soap and dependencies
+```bash
+npm install --save ngx-soap-next
+npm install --save buffer concat-stream core-js crypto-js events lodash sax stream debug
+```
 
-    `npm install --save ngx-soap-next`
+## Usage
 
-    `npm install --save buffer concat-stream core-js crypto-js events lodash sax stream debug`
+### 🆕 Modern Approach (Angular 14+, Standalone Components)
 
-2. Add NgxSoapModule to your app module
+**Recommended for new applications using Angular 14+ standalone components**
 
-    ```
-    import { NgxSoapModule } from 'ngx-soap';
-    ...
-        @NgModule({
-            imports: [ ..., NgxSoapModule, ... ]
-        ...
-    ```
+#### 1. Configure providers in `main.ts` or `app.config.ts`:
+
+```typescript
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideHttpClient } from '@angular/common/http';
+import { provideNgxSoap } from 'ngx-soap-next';
+import { AppComponent } from './app/app.component';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideHttpClient(),
+    provideNgxSoap()  // 🆕 Modern provider function
+  ]
+});
+```
+
+#### 2. Use in your standalone component with signals and inject():
+
+```typescript
+import { Component, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NgxSoapService, Client, ISoapMethodResponse } from 'ngx-soap-next';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  // Modern signals for reactive state (Angular 16+)
+  intA = signal(2);
+  intB = signal(3);
+  result = signal('');
+  
+  // Modern inject() for DI (Angular 14+)
+  private soap = inject(NgxSoapService);
+  private destroyRef = inject(DestroyRef);
+  
+  client: Client | null = null;
+
+  constructor() {
+    this.soap.createClient('assets/calculator.wsdl')
+      .then(client => this.client = client)
+      .catch(err => console.error('Error creating SOAP client:', err));
+  }
+
+  sum() {
+    if (!this.client) return;
     
-3. Inject NgxSoapService in your component:
-
-    ```
-    ...
-    import { NgxSoapService, Client, ISoapMethodResponse } from 'ngx-soap';
-    ...
+    const body = {
+      intA: this.intA(),  // Read signal value
+      intB: this.intB()
+    };
     
-    @Component({
-      selector: 'app-root',
-      templateUrl: './app.component.html',
-      styleUrls: ['./app.component.css']
-    })
-    export class AppComponent {
-        client: Client;
-        intA = 2;
-        intB = 3;
-        
-        constructor(private soap: NgxSoapService) {
-            this.soap.createClient('assets/calculator.wsdl').subscribe(client => this.client = client);
-        }
-        
-        sum() {
-            const body = {
-              intA: this.intA,
-              intB: this.intB
-            };
-            (<any>this.client).Add(body).subscribe((res: ISoapMethodResponse) => this.message = res.result.AddResult);
-        }
-    }
-    ```
+    (<any>this.client).Add(body)
+      .pipe(takeUntilDestroyed(this.destroyRef))  // Automatic cleanup (Angular 16+)
+      .subscribe({
+        next: (res: ISoapMethodResponse) => {
+          this.result.set(res.result.AddResult);  // Update signal
+        },
+        error: (err) => console.error('Error calling Add:', err)
+      });
+  }
+}
+```
+
+#### 3. Use modern control flow in your template:
+
+```html
+<!-- Modern @if syntax (Angular 17+) -->
+@if (result()) {
+  <p>Result: {{ result() }}</p>
+}
+
+<!-- Modern @for syntax (Angular 17+) -->
+@for (item of items(); track item.id) {
+  <div>{{ item.name }}</div>
+}
+```
+
+---
+
+### 📦 Traditional Approach (NgModule-based)
+
+**For existing applications using NgModules**
+
+#### 1. Add NgxSoapModule to your app module:
+
+```typescript
+import { NgxSoapModule } from 'ngx-soap-next';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    NgxSoapModule  // Import the module
+  ],
+  providers: [
+    provideHttpClient(withInterceptorsFromDi())
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+#### 2. Inject NgxSoapService in your component:
+
+```typescript
+import { Component } from '@angular/core';
+import { NgxSoapService, Client, ISoapMethodResponse } from 'ngx-soap-next';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+  standalone: false
+})
+export class AppComponent {
+  client: Client;
+  intA = 2;
+  intB = 3;
+  
+  constructor(private soap: NgxSoapService) {
+    this.soap.createClient('assets/calculator.wsdl')
+      .then(client => this.client = client)
+      .catch(err => console.error('Error:', err));
+  }
+  
+  sum() {
+    const body = {
+      intA: this.intA,
+      intB: this.intB
+    };
+    (<any>this.client).Add(body).subscribe(
+      (res: ISoapMethodResponse) => this.message = res.result.AddResult
+    );
+  }
+}
+```
+
+## 🆕 What's New in v0.19.0 (Angular 19)
+
+### Framework Updates
+- ✅ Angular 19.2.16 support
+- ✅ TypeScript 5.8.3
+- ✅ Jest 30 + jest-preset-angular 15
+- ✅ Modern standalone components architecture
+
+### Modern Angular Features
+- **Signals**: Reactive state management with `signal()`
+- **New Control Flow**: `@if`, `@else`, `@for`, `@defer` syntax
+- **inject()**: Modern dependency injection
+- **takeUntilDestroyed**: Automatic subscription cleanup
+- **provideNgxSoap()**: Functional provider for standalone apps
+
+### Migration from v0.18.0
+No breaking changes! Both NgModule and standalone approaches are supported:
+- Existing NgModule apps: continue using `NgxSoapModule`
+- New standalone apps: use `provideNgxSoap()`
+
+See [CHANGELOG.md](./CHANGELOG.md) for detailed migration notes.
+
+---
 
 ## Build and publish the lib (for maintainers)
 
@@ -64,6 +196,7 @@ If branch doesn't exist - create it. Apply code changes in that branch.
 ### Version Bumping
 
 Use the provided npm scripts to bump the version:
+
 - `npm run bump:patch` - Bug fixes (0.17.0 → 0.17.1)
 - `npm run bump:minor` - New features (0.17.0 → 0.18.0)
 - `npm run bump:major` - Breaking changes (0.17.0 → 1.0.0)
@@ -78,19 +211,22 @@ Note: Also bump the version in `projects/ngx-soap/package.json` separately.
 4. `npm run publish` - Publish to npm
 
 Or use the combined command:
+
 ```bash
 npm run build:lib:publish
 ```
 
-## Local development 
+## Local development
 
 ### Setup
+
 ```bash
 git clone -b angular-cli-ilb https://github.com/seyfer/ngx-soap.git
 cd ngx-soap && npm install
 ```
 
 ### Testing (Jest)
+
 ```bash
 npm test                    # Run all tests
 npm run test:lib           # Run library tests only
@@ -100,6 +236,7 @@ npm run test:watch         # Run tests in watch mode
 ```
 
 ### Building
+
 ```bash
 npm run build:lib          # Build the library
 npm run build              # Build the example app
@@ -107,6 +244,7 @@ npm run build:all          # Build both
 ```
 
 ### Development Server
+
 ```bash
 npm start                  # Start dev server with proxy
 # or
@@ -114,6 +252,50 @@ ng serve --proxy-config proxy.conf.json
 ```
 
 See example app under `src/app`
+
+## API Reference
+
+### provideNgxSoap()
+
+Modern provider function for standalone applications (Angular 14+).
+
+```typescript
+import { provideNgxSoap } from 'ngx-soap-next';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideNgxSoap()  // Provides NgxSoapService
+  ]
+});
+```
+
+### NgxSoapModule
+
+Traditional NgModule for module-based applications (backward compatibility).
+
+```typescript
+import { NgxSoapModule } from 'ngx-soap-next';
+
+@NgModule({
+  imports: [NgxSoapModule]
+})
+export class AppModule { }
+```
+
+### NgxSoapService
+
+Main service for creating SOAP clients.
+
+**Methods:**
+- `createClient(wsdlUrl: string, options?: any, endpoint?: string): Promise<Client>`
+
+**Example:**
+```typescript
+this.soap.createClient('assets/calculator.wsdl', { /* options */ })
+  .then(client => this.client = client);
+```
+
+---
 
 ## Configuration Options
 
@@ -273,6 +455,7 @@ this.client.on('soapError', (error: any, eid: string) => {
 ## Testing
 
 The library uses Jest for unit testing with the following test structure:
+
 - Security tests (BasicAuth, Bearer, WSSecurity, WSSecurityCert, WSSecurityCertWithToken, WSSecurityPlusCert)
 - HTTP client tests
 - WSDL parsing tests (with fixtures in `test/fixtures/`)
@@ -282,9 +465,11 @@ The library uses Jest for unit testing with the following test structure:
 Tests are located in `projects/ngx-soap/test/` with real WSDL fixtures for comprehensive testing.
 
 ## Author
+
 [Luca Lulani](https://github.com/lula)
 
 ## Contributors
+
 [Oleg Abrazhaev](https://github.com/seyfer)
 [markward](https://github.com/marcward)
 [Andrei Bespamiatnov](https://github.com/AndreyBespamyatnov)

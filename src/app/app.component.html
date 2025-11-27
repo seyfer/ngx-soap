@@ -1,13 +1,18 @@
 <mat-toolbar color="primary">
-    <span class="title">{{ title }}</span>
+  <span class="title">{{ title }}</span>
   <span style="flex: 1 1 auto"></span>
-  <button mat-button (click)="showDiagnostic = !showDiagnostic">
-    <ng-container *ngIf="!showDiagnostic">Show Diagnostic</ng-container>
-    <ng-container *ngIf="showDiagnostic">Hide Diagnostic</ng-container>
+  <button mat-button (click)="toggleDiagnostic()">
+    @if (!showDiagnostic()) {
+      Show Diagnostic
+    } @else {
+      Hide Diagnostic
+    }
   </button>
 </mat-toolbar>
 
-<mat-progress-bar mode="indeterminate" *ngIf="loading" color="accent"></mat-progress-bar>
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+}
 
 <div class="w-full px-5 py-5 flex flex-row gap-5">
   <mat-card class="flex-1">
@@ -16,16 +21,16 @@
     </mat-card-header>
     <mat-card-content>
       <mat-form-field>
-        <input matInput name="intA" [(ngModel)]="intA" placeholder="A">
+        <input matInput name="intA" [ngModel]="intA()" (ngModelChange)="intA.set($event)" placeholder="A" type="number">
       </mat-form-field>
       <mat-form-field>
-        <input matInput name="intB" [(ngModel)]="intB" placeholder="B">
+        <input matInput name="intB" [ngModel]="intB()" (ngModelChange)="intB.set($event)" placeholder="B" type="number">
       </mat-form-field>
     </mat-card-content>
 
     <mat-card-actions align="end">
-      <button mat-raised-button color="primary" (click)="sum()" [disabled]="loading">Sum</button>
-      <button mat-raised-button color="primary" (click)="subtract()" [disabled]="loading">Sub</button>
+      <button mat-raised-button color="primary" (click)="sum()" [disabled]="loading()">Sum</button>
+      <button mat-raised-button color="primary" (click)="subtract()" [disabled]="loading()">Sub</button>
     </mat-card-actions>
   </mat-card>
   <mat-card class="flex-1">
@@ -34,27 +39,33 @@
     </mat-card-header>
     <mat-card-content>
       <mat-form-field>
-        <input matInput readonly [(ngModel)]="message" placeholder="{{resultLabel}}">
+        <input matInput readonly [value]="message()" [placeholder]="resultLabel">
       </mat-form-field>
     </mat-card-content>
   </mat-card>
 </div>
 
-<div class="w-full px-5 py-5 flex flex-row gap-5" *ngIf="showDiagnostic">
-  <mat-card class="flex-1">
-    <mat-card-header>
-      <mat-card-title>XML Response</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      {{ xmlResponse }}
-    </mat-card-content>
-  </mat-card>
-  <mat-card class="flex-1">
-    <mat-card-header>
-      <mat-card-title>JSON Response</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <pre>{{ jsonResponse | json }}</pre>
-    </mat-card-content>
-  </mat-card>
-</div>
+@defer (when showDiagnostic()) {
+  <div class="w-full px-5 py-5 flex flex-row gap-5">
+    <mat-card class="flex-1">
+      <mat-card-header>
+        <mat-card-title>XML Response</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        {{ xmlResponse() }}
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="flex-1">
+      <mat-card-header>
+        <mat-card-title>JSON Response</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <pre>{{ jsonResponse() }}</pre>
+      </mat-card-content>
+    </mat-card>
+  </div>
+} @placeholder {
+  <div class="w-full px-5 py-5 text-center text-gray-500">
+    Click "Show Diagnostic" to view SOAP responses
+  </div>
+}
