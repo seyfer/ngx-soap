@@ -7,7 +7,7 @@
   "license": "MIT",
   "keywords": [
     "Angular",
-    "Angular19",
+    "Angular20",
     "@angular",
     "SOAP",
     "WSDL"
@@ -21,8 +21,8 @@
     "tslib": "^2.8.1"
   },
   "peerDependencies": {
-    "@angular/common": "^19.0.0",
-    "@angular/core": "^19.0.0",
+    "@angular/common": "^20.0.0",
+    "@angular/core": "^20.0.0",
     "assert": "^2.1.0",
     "bluebird": "^3.7.2",
     "buffer": "^5.1.0",

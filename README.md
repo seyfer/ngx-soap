@@ -2,12 +2,12 @@
 
 Simple SOAP client for Angular based on amazing [node-soap](https://github.com/vpulim/node-soap).
 
-✨ **Now with Angular 19 support!** Featuring modern standalone components, signals, and improved developer experience.
+✨ **Now with Angular 20 support!** Featuring modern standalone components, signals, and improved developer experience.
 
 Project has been recreated from scratch with Angular CLI.
 
 Please be aware, this package version number will be equal to the corresponding Angular version:
-0.10.x = v10, 0.11.x = v11, ... 0.17.x = v17, 0.18.x = v18, **0.19.x = v19**
+0.10.x = v10, 0.11.x = v11, ... 0.17.x = v17, 0.18.x = v18, 0.19.x = v19, **0.20.x = v20**
 
 ## Installation
 
@@ -164,10 +164,10 @@ export class AppComponent {
 }
 ```
 
-## 🆕 What's New in v0.19.0 (Angular 19)
+## 🆕 What's New in v0.20.0 (Angular 20)
 
 ### Framework Updates
-- ✅ Angular 19.2.16 support
+- ✅ Angular 20.3.14 support
 - ✅ TypeScript 5.8.3
 - ✅ Jest 30 + jest-preset-angular 15
 - ✅ Modern standalone components architecture
@@ -179,7 +179,7 @@ export class AppComponent {
 - **takeUntilDestroyed**: Automatic subscription cleanup
 - **provideNgxSoap()**: Functional provider for standalone apps
 
-### Migration from v0.18.0
+### Migration from v0.19.0
 No breaking changes! Both NgModule and standalone approaches are supported:
 - Existing NgModule apps: continue using `NgxSoapModule`
 - New standalone apps: use `provideNgxSoap()`

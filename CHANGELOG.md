@@ -1,26 +1,46 @@
 # CHANGELOG
 
+## 0.20.0
+
+### Angular 20 Upgrade
+
+**Framework Updates**
+- Updated to Angular 20 compatibility
+
+**TypeScript & Core Dependencies**
+- TypeScript 5.8.3 (Angular 20 compatibility)
+- zone.js 0.15.1 (Angular 20 requirement)
+
+**Build Tools**
+- Updated @angular-builders/custom-webpack to 19.0.1
+
+**Type Definitions**
+- @types/node 24.10.1
+- @types/jest 30.0.0
+
+**Library Package Updates**
+- Updated peerDependencies to require Angular ^20.0.0
+- Updated keywords from "Angular19" to "Angular20"
+
+**Breaking Changes**: None ✅
+
+**Migration Notes**
+- No code changes required for migration from v0.19.0
+- All existing APIs remain fully compatible
+- Both NgModule and standalone approaches continue to be supported
+
+---
+
 ## 0.19.0
 
 ### Angular 19 Upgrade
 
 **Framework Updates**
 - Updated to Angular 19 compatibility
-- Updated all @angular packages to version 19.2.16
-- Updated @angular/cli to 19.2.19
-- Updated @angular/material and @angular/cdk to 19.2.19
-- Updated @angular/build to 19.2.19
-- Updated ng-packagr to 19.2.2
 
 **TypeScript & Core Dependencies**
 - Updated TypeScript to 5.8.3 (Angular 19 compatibility requirement)
 - Updated zone.js to 0.15.1 (Angular 19.2.16 requirement)
-
-**Testing Infrastructure**
-- Updated Jest from 29.7.0 to 30.2.0
-- Updated jest-preset-angular from 14.2.4 to 15.0.3
-- Added jest-environment-jsdom as separate dev dependency (required by Jest 30+)
-- All 269 tests passing ✅
 
 **Build Tools**
 - Updated @angular-builders/custom-webpack from 18.0.0 to 19.0.1
