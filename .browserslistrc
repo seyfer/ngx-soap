@@ -1,8 +1,26 @@
 # This file is currently used by autoprefixer to adjust CSS to support the below specified browsers
 # For additional information regarding the format and rule options, please see:
 # https://github.com/browserslist/browserslist#queries
-last 2 versions
+
+# Angular 20 compatible browsers
+last 2 Chrome versions
+last 2 Firefox versions
+last 2 Edge versions
+last 2 Safari versions
+last 2 iOS versions
+last 2 ChromeAndroid versions
+
+# Extended Support Release
 Firefox ESR
+
+# General rules
 not dead
+not IE 11
 not op_mini all
 not kaios > 0
+
+# Exclude problematic niche browsers
+not and_qq > 0
+not and_uc > 0
+not op_mob > 0
+not samsung < 15

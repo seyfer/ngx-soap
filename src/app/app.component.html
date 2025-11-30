@@ -10,62 +10,101 @@
   </button>
 </mat-toolbar>
 
+<!-- 🆕 Angular 20: Resource API loading state -->
+@if (soapClient.isLoading()) {
+  <mat-progress-bar mode="indeterminate" color="warn"></mat-progress-bar>
+  <div class="text-center p-4 text-gray-600">
+    📡 Loading SOAP client...
+  </div>
+}
+
+<!-- Calculation loading state -->
 @if (loading()) {
   <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
 }
 
-<div class="w-full px-5 py-5 flex flex-row gap-5">
-  <mat-card class="flex-1">
-    <mat-card-header>
-      <mat-card-title>Operation</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <mat-form-field>
-        <input matInput name="intA" [ngModel]="intA()" (ngModelChange)="intA.set($event)" placeholder="A" type="number">
-      </mat-form-field>
-      <mat-form-field>
-        <input matInput name="intB" [ngModel]="intB()" (ngModelChange)="intB.set($event)" placeholder="B" type="number">
-      </mat-form-field>
-    </mat-card-content>
+<!-- 🆕 Angular 20: Resource API error state -->
+@if (soapClient.error()) {
+  <div class="error-banner">
+    <mat-card class="mx-5 mt-5 bg-red-50 border-l-4 border-red-500">
+      <mat-card-content>
+        <p class="text-red-800 font-semibold">❌ Failed to load SOAP client</p>
+        <p class="text-red-600 text-sm">{{ soapClient.error()?.message }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+}
 
-    <mat-card-actions align="end">
-      <button mat-raised-button color="primary" (click)="sum()" [disabled]="loading()">Sum</button>
-      <button mat-raised-button color="primary" (click)="subtract()" [disabled]="loading()">Sub</button>
-    </mat-card-actions>
-  </mat-card>
-  <mat-card class="flex-1">
-    <mat-card-header>
-      <mat-card-title>Result</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <mat-form-field>
-        <input matInput readonly [value]="message()" [placeholder]="resultLabel">
-      </mat-form-field>
-    </mat-card-content>
-  </mat-card>
-</div>
-
-@defer (when showDiagnostic()) {
+<!-- 🆕 Angular 20: Main content only shown when client is ready -->
+@if (soapClient.value()) {
   <div class="w-full px-5 py-5 flex flex-row gap-5">
     <mat-card class="flex-1">
       <mat-card-header>
-        <mat-card-title>XML Response</mat-card-title>
+        <mat-card-title>Operation</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        {{ xmlResponse() }}
+        <mat-form-field>
+          <!-- 🆕 Angular 20: Cleaner two-way binding with model() -->
+          <input matInput [(ngModel)]="intA" placeholder="A" type="number">
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput [(ngModel)]="intB" placeholder="B" type="number">
+        </mat-form-field>
+        
+        <!-- 🆕 Angular 20: Validation hint using computed signal -->
+        @if (!hasValidInputs() && (intA() !== undefined || intB() !== undefined)) {
+          <p class="text-sm text-red-500 mt-2">⚠️ Please enter valid numbers</p>
+        }
       </mat-card-content>
+
+      <mat-card-actions align="end">
+        <!-- 🆕 Angular 20: Using computed signal for disabled state -->
+        <button mat-raised-button color="primary" 
+                (click)="sum()" 
+                [disabled]="!isReadyToCalculate()">
+          Sum
+        </button>
+        <button mat-raised-button color="primary" 
+                (click)="subtract()" 
+                [disabled]="!isReadyToCalculate()">
+          Sub
+        </button>
+      </mat-card-actions>
     </mat-card>
     <mat-card class="flex-1">
       <mat-card-header>
-        <mat-card-title>JSON Response</mat-card-title>
+        <mat-card-title>Result</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <pre>{{ jsonResponse() }}</pre>
+        <mat-form-field>
+          <input matInput readonly [value]="message()" [placeholder]="resultLabel">
+        </mat-form-field>
       </mat-card-content>
     </mat-card>
   </div>
-} @placeholder {
-  <div class="w-full px-5 py-5 text-center text-gray-500">
-    Click "Show Diagnostic" to view SOAP responses
-  </div>
+
+  @defer (when showDiagnostic()) {
+    <div class="w-full px-5 py-5 flex flex-row gap-5">
+      <mat-card class="flex-1">
+        <mat-card-header>
+          <mat-card-title>XML Response</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          {{ xmlResponse() }}
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="flex-1">
+        <mat-card-header>
+          <mat-card-title>JSON Response</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <pre>{{ jsonResponse() }}</pre>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  } @placeholder {
+    <div class="w-full px-5 py-5 text-center text-gray-500">
+      Click "Show Diagnostic" to view SOAP responses
+    </div>
+  }
 }

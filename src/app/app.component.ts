@@ -1,5 +1,4 @@
-import { Component, signal, inject, DestroyRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, signal, computed, model, inject, effect, resource } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -25,33 +24,73 @@ import { NgxSoapService, Client, ISoapMethodResponse } from '../../projects/ngx-
   ]
 })
 export class AppComponent {
-  // Modern Angular signals for reactive state
   title = 'SOAP Calculator app';
-  intA = signal<number | undefined>(undefined);
-  intB = signal<number | undefined>(undefined);
+  
+  // 🆕 Angular 20: model() for cleaner two-way binding
+  intA = model<number | undefined>(undefined);
+  intB = model<number | undefined>(undefined);
+  
+  // Regular signals
   loading = signal(false);
   showDiagnostic = signal(false);
   message = signal('');
   xmlResponse = signal('');
   jsonResponse = signal('');
   resultLabel = 'Result';
-  client: Client | null = null;
+  
+  // 🆕 Angular 20: computed() for derived state
+  hasValidInputs = computed(() => {
+    const a = this.intA();
+    const b = this.intB();
+    return a !== undefined && b !== undefined && !isNaN(a) && !isNaN(b);
+  });
+  
+  // 🆕 Angular 20: computed() for button disabled state
+  isReadyToCalculate = computed(() => 
+    this.hasValidInputs() && 
+    this.soapClient.value() !== undefined &&
+    !this.loading()
+  );
 
-  // Modern dependency injection
   private soap = inject(NgxSoapService);
-  private destroyRef = inject(DestroyRef);
+  
+  // 🆕 Angular 20: resource() API for async client initialization
+  soapClient = resource({
+    loader: async () => {
+      return await this.soap.createClient('assets/calculator.wsdl');
+    }
+  });
 
   constructor() {
-    // Initialize SOAP client
-    this.soap.createClient('assets/calculator.wsdl')
-      .then(client => {
-        this.client = client;
-      })
-      .catch(err => console.error('Error creating SOAP client:', err));
+    // 🆕 Angular 20: effect() for side effects (logging)
+    effect(() => {
+      if (this.loading()) {
+        console.log('🔄 Starting calculation...');
+      }
+    });
+    
+    effect(() => {
+      const msg = this.message();
+      if (msg) {
+        console.log('✅ Result:', msg);
+      }
+    });
+    
+    // 🆕 Angular 20: effect() for SOAP client status logging
+    effect(() => {
+      if (this.soapClient.isLoading()) {
+        console.log('📡 Loading SOAP client...');
+      } else if (this.soapClient.value()) {
+        console.log('✅ SOAP client ready');
+      } else if (this.soapClient.error()) {
+        console.error('❌ SOAP client error:', this.soapClient.error());
+      }
+    });
   }
 
   sum() {
-    if (!this.client) return;
+    const client = this.soapClient.value();
+    if (!client || !this.hasValidInputs()) return;
 
     this.loading.set(true);
     const body = {
@@ -59,24 +98,24 @@ export class AppComponent {
       intB: this.intB()
     };
 
-    (<any>this.client).Add(body)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res: ISoapMethodResponse) => {
-          this.xmlResponse.set(res.xml);
-          this.jsonResponse.set(JSON.stringify(res.result, null, 2));
-          this.message.set(res.result.AddResult);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          console.error('Error calling Add method:', err);
-          this.loading.set(false);
-        }
-      });
+    (client as any).Add(body).subscribe({
+      next: (res: ISoapMethodResponse) => {
+        this.xmlResponse.set(res.xml);
+        this.jsonResponse.set(JSON.stringify(res.result, null, 2));
+        this.message.set(res.result.AddResult);
+        this.loading.set(false);
+      },
+      error: (err: Error) => {
+        console.error('Error calling Add method:', err);
+        this.message.set('Error: ' + err.message);
+        this.loading.set(false);
+      }
+    });
   }
 
   subtract() {
-    if (!this.client) return;
+    const client = this.soapClient.value();
+    if (!client || !this.hasValidInputs()) return;
 
     this.loading.set(true);
     const body = {
@@ -84,23 +123,23 @@ export class AppComponent {
       intB: this.intB()
     };
 
-    (<any>this.client).Subtract(body)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res: ISoapMethodResponse) => {
-          this.xmlResponse.set(res.xml);
-          this.jsonResponse.set(JSON.stringify(res.result, null, 2));
-          this.message.set(res.result.SubtractResult);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          console.error('Error calling Subtract method:', err);
-          this.loading.set(false);
-        }
-      });
+    (client as any).Subtract(body).subscribe({
+      next: (res: ISoapMethodResponse) => {
+        this.xmlResponse.set(res.xml);
+        this.jsonResponse.set(JSON.stringify(res.result, null, 2));
+        this.message.set(res.result.SubtractResult);
+        this.loading.set(false);
+      },
+      error: (err: Error) => {
+        console.error('Error calling Subtract method:', err);
+        this.message.set('Error: ' + err.message);
+        this.loading.set(false);
+      }
+    });
   }
 
   toggleDiagnostic() {
-    this.showDiagnostic.set(!this.showDiagnostic());
+    // 🆕 Angular 20: use update() for signal transformations
+    this.showDiagnostic.update(value => !value);
   }
 }

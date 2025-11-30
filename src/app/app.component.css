@@ -1,0 +1,27 @@
+.title {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.error-banner mat-card {
+  margin-bottom: 1rem;
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+mat-card-actions {
+  padding: 1rem;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+

@@ -1,7 +1,6 @@
 import { AppComponent } from './app.component';
 import { NgxSoapService, ISoapMethodResponse } from '../../projects/ngx-soap/src/public_api';
 import { of, throwError } from 'rxjs';
-import { DestroyRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 
@@ -10,28 +9,20 @@ const createMockSoapService = (): Partial<NgxSoapService> => ({
     createClient: jest.fn().mockResolvedValue({})
 });
 
-// Mock DestroyRef
-const createMockDestroyRef = (): Partial<DestroyRef> => ({
-    onDestroy: jest.fn()
-});
-
-describe('AppComponent', () => {
+describe('AppComponent - Angular 20 Features', () => {
     let component: AppComponent;
     let mockSoapService: Partial<NgxSoapService>;
-    let mockDestroyRef: Partial<DestroyRef>;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [AppComponent],
             providers: [
                 provideHttpClient(),
-                { provide: NgxSoapService, useValue: createMockSoapService() },
-                { provide: DestroyRef, useValue: createMockDestroyRef() }
+                { provide: NgxSoapService, useValue: createMockSoapService() }
             ]
         });
 
         mockSoapService = TestBed.inject(NgxSoapService);
-        mockDestroyRef = TestBed.inject(DestroyRef);
         component = TestBed.createComponent(AppComponent).componentInstance;
     });
 
@@ -58,67 +49,49 @@ describe('AppComponent', () => {
             expect(mockSoapService.createClient).toHaveBeenCalledWith('assets/calculator.wsdl');
         });
 
-        it('should set client property when createClient succeeds', async () => {
-            const mockClient = { describe: jest.fn() };
-            const service = createMockSoapService();
-            (service.createClient as jest.Mock).mockResolvedValue(mockClient);
-            
-            TestBed.resetTestingModule();
-            TestBed.configureTestingModule({
-                imports: [AppComponent],
-                providers: [
-                    provideHttpClient(),
-                    { provide: NgxSoapService, useValue: service },
-                    { provide: DestroyRef, useValue: createMockDestroyRef() }
-                ]
-            });
-            
-            const comp = TestBed.createComponent(AppComponent).componentInstance;
-            await new Promise(resolve => setTimeout(resolve, 0));
-            
-            expect(comp.client).toBe(mockClient);
+        it('should initialize soapClient resource on construction', () => {
+            // 🆕 Angular 20: resource() handles async initialization
+            expect(mockSoapService.createClient).toHaveBeenCalledWith('assets/calculator.wsdl');
         });
 
-        it('should handle createClient errors gracefully', async () => {
-            const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-            const error = new Error('WSDL load error');
-            const service = createMockSoapService();
-            (service.createClient as jest.Mock).mockRejectedValue(error);
-            
-            TestBed.resetTestingModule();
-            TestBed.configureTestingModule({
-                imports: [AppComponent],
-                providers: [
-                    provideHttpClient(),
-                    { provide: NgxSoapService, useValue: service },
-                    { provide: DestroyRef, useValue: createMockDestroyRef() }
-                ]
-            });
-            
-            TestBed.createComponent(AppComponent);
-            await new Promise(resolve => setTimeout(resolve, 0));
-            
-            expect(consoleSpy).toHaveBeenCalledWith('Error creating SOAP client:', error);
-            consoleSpy.mockRestore();
-        });
-
-        it('should initialize properties with signals', () => {
-            expect(component.title).toBe('SOAP Calculator app');
-            expect(component.intA()).toBeUndefined();
-            expect(component.intB()).toBeUndefined();
-            expect(component.loading()).toBe(false);
-            expect(component.message()).toBe('');
-        });
+    it('should initialize properties with signals and models', () => {
+        expect(component.title).toBe('SOAP Calculator app');
+        // 🆕 Angular 20: model() signals
+        expect(component.intA()).toBeUndefined();
+        expect(component.intB()).toBeUndefined();
+        expect(component.loading()).toBe(false);
+        expect(component.message()).toBe('');
     });
 
-    describe('sum() method', () => {
+    it('should have computed signals', () => {
+        // 🆕 Angular 20: computed() signals
+        expect(component.hasValidInputs()).toBe(false);
+        expect(component.isReadyToCalculate()).toBe(false);
+        
+        // Set valid inputs
+        component.intA.set(5);
+        component.intB.set(3);
+        expect(component.hasValidInputs()).toBe(true);
+    });
+
+    it('should initialize soapClient resource', () => {
+        // 🆕 Angular 20: resource() API
+        expect(component.soapClient).toBeDefined();
+        expect(typeof component.soapClient.isLoading).toBe('function');
+        expect(typeof component.soapClient.hasValue).toBe('function');
+        expect(typeof component.soapClient.value).toBe('function');
+    });
+    });
+
+    describe('sum() method - Angular 20', () => {
         let mockClient: any;
 
         beforeEach(() => {
             mockClient = {
                 Add: jest.fn()
             };
-            component.client = mockClient;
+            // Mock the resource value
+            jest.spyOn(component.soapClient, 'value').mockReturnValue(mockClient as any);
             component.intA.set(3);
             component.intB.set(2);
         });
@@ -220,7 +193,8 @@ describe('AppComponent', () => {
             mockClient = {
                 Subtract: jest.fn()
             };
-            component.client = mockClient;
+            // Mock the resource value
+            jest.spyOn(component.soapClient, 'value').mockReturnValue(mockClient as any);
             component.intA.set(10);
             component.intB.set(3);
         });
@@ -335,7 +309,35 @@ describe('AppComponent', () => {
         });
     });
 
-    describe('Edge Cases', () => {
+    describe('toggleDiagnostic() - Angular 20 signal.update()', () => {
+        it('should toggle showDiagnostic from false to true', () => {
+            expect(component.showDiagnostic()).toBe(false);
+            
+            component.toggleDiagnostic();
+            
+            expect(component.showDiagnostic()).toBe(true);
+        });
+
+        it('should toggle showDiagnostic from true to false', () => {
+            component.showDiagnostic.set(true);
+            
+            component.toggleDiagnostic();
+            
+            expect(component.showDiagnostic()).toBe(false);
+        });
+
+        it('should toggle multiple times correctly', () => {
+            const initial = component.showDiagnostic();
+            
+            component.toggleDiagnostic();
+            expect(component.showDiagnostic()).toBe(!initial);
+            
+            component.toggleDiagnostic();
+            expect(component.showDiagnostic()).toBe(initial);
+        });
+    });
+
+    describe('Edge Cases - Angular 20', () => {
         it('should handle zero values in sum', () => {
             const mockClient = {
                 Add: jest.fn().mockReturnValue(of({
@@ -346,7 +348,10 @@ describe('AppComponent', () => {
                     result: { AddResult: 0 }
                 } as ISoapMethodResponse))
             };
-            component.client = mockClient as any;
+            
+            // Mock resource value
+            jest.spyOn(component.soapClient, 'value').mockReturnValue(mockClient as any);
+            jest.spyOn(component.soapClient, 'hasValue').mockReturnValue(true);
             component.intA.set(0);
             component.intB.set(0);
             
@@ -358,18 +363,35 @@ describe('AppComponent', () => {
             });
         });
 
-        it('should handle null client in sum gracefully', () => {
-            component.client = null;
+        it('should handle null client (resource not ready) in sum gracefully', () => {
+            jest.spyOn(component.soapClient, 'value').mockReturnValue(null as any);
             
             // Should not throw, just return early
             expect(() => component.sum()).not.toThrow();
         });
 
-        it('should handle null client in subtract gracefully', () => {
-            component.client = null;
+        it('should handle null client (resource not ready) in subtract gracefully', () => {
+            jest.spyOn(component.soapClient, 'value').mockReturnValue(null as any);
             
             // Should not throw, just return early
             expect(() => component.subtract()).not.toThrow();
+        });
+
+        it('should not calculate when hasValidInputs is false', () => {
+            const mockClient = {
+                Add: jest.fn()
+            };
+            jest.spyOn(component.soapClient, 'value').mockReturnValue(mockClient as any);
+            jest.spyOn(component.soapClient, 'hasValue').mockReturnValue(true);
+            
+            // Invalid inputs
+            component.intA.set(undefined);
+            component.intB.set(undefined);
+            
+            component.sum();
+            
+            // Should not call Add because inputs are invalid
+            expect(mockClient.Add).not.toHaveBeenCalled();
         });
     });
 });
