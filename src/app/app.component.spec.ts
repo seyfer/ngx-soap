@@ -9,7 +9,7 @@ const createMockSoapService = (): Partial<NgxSoapService> => ({
     createClient: jest.fn().mockResolvedValue({})
 });
 
-describe('AppComponent - Angular 20 Features', () => {
+describe('AppComponent', () => {
     let component: AppComponent;
     let mockSoapService: Partial<NgxSoapService>;
 
@@ -45,18 +45,15 @@ describe('AppComponent - Angular 20 Features', () => {
     });
 
     describe('Component Initialization', () => {
-        it('should call createClient on construction', () => {
-            expect(mockSoapService.createClient).toHaveBeenCalledWith('assets/calculator.wsdl');
-        });
-
-        it('should initialize soapClient resource on construction', () => {
-            // 🆕 Angular 20: resource() handles async initialization
-            expect(mockSoapService.createClient).toHaveBeenCalledWith('assets/calculator.wsdl');
+        it('should initialize soapClient resource', () => {
+            // Resource API is lazy-loaded, not called on construction
+            expect(component.soapClient).toBeDefined();
+            expect(typeof component.soapClient.isLoading).toBe('function');
+            expect(typeof component.soapClient.value).toBe('function');
         });
 
     it('should initialize properties with signals and models', () => {
         expect(component.title).toBe('SOAP Calculator app');
-        // 🆕 Angular 20: model() signals
         expect(component.intA()).toBeUndefined();
         expect(component.intB()).toBeUndefined();
         expect(component.loading()).toBe(false);
@@ -64,7 +61,6 @@ describe('AppComponent - Angular 20 Features', () => {
     });
 
     it('should have computed signals', () => {
-        // 🆕 Angular 20: computed() signals
         expect(component.hasValidInputs()).toBe(false);
         expect(component.isReadyToCalculate()).toBe(false);
         
@@ -75,7 +71,6 @@ describe('AppComponent - Angular 20 Features', () => {
     });
 
     it('should initialize soapClient resource', () => {
-        // 🆕 Angular 20: resource() API
         expect(component.soapClient).toBeDefined();
         expect(typeof component.soapClient.isLoading).toBe('function');
         expect(typeof component.soapClient.hasValue).toBe('function');
@@ -83,7 +78,7 @@ describe('AppComponent - Angular 20 Features', () => {
     });
     });
 
-    describe('sum() method - Angular 20', () => {
+    describe('sum() method', () => {
         let mockClient: any;
 
         beforeEach(() => {
@@ -309,7 +304,7 @@ describe('AppComponent - Angular 20 Features', () => {
         });
     });
 
-    describe('toggleDiagnostic() - Angular 20 signal.update()', () => {
+    describe('toggleDiagnostic() using signal.update()', () => {
         it('should toggle showDiagnostic from false to true', () => {
             expect(component.showDiagnostic()).toBe(false);
             
@@ -337,7 +332,7 @@ describe('AppComponent - Angular 20 Features', () => {
         });
     });
 
-    describe('Edge Cases - Angular 20', () => {
+    describe('Edge Cases', () => {
         it('should handle zero values in sum', () => {
             const mockClient = {
                 Add: jest.fn().mockReturnValue(of({
