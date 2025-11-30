@@ -12,6 +12,20 @@ mat-form-field {
   margin-bottom: 0.5rem;
 }
 
+/* Input fields side by side */
+mat-card-content {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+mat-card-content mat-form-field {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 0;
+}
+
 mat-card-actions {
   padding: 1rem;
 }
