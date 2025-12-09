@@ -1,5 +1,44 @@
 # CHANGELOG
 
+## 0.20.2
+
+### Type Exports & Developer Experience
+
+**New Type Exports**
+- Exported `IOptions` interface for SOAP client configuration
+- Exported `IWsdlBaseOptions` interface for WSDL base options
+- Improved type safety for `createClient()` method signature (`options: any` → `options: IOptions`)
+
+**Bug Fixes**
+- Fixed `core-js@3` polyfills compatibility in `src/polyfills.ts`
+  - Removed deprecated `core-js/es7/reflect` import (not needed for Angular 20+ with AOT)
+
+**Developer Experience**
+- Users now get full autocomplete and compile-time checking for options like `disableCache`, `endpoint`, `forceSoap12Headers`, etc.
+
+**Breaking Changes**: None ✅
+
+---
+
+## 0.20.1
+
+### Dependency Compatibility Fix
+
+**Bug Fixes**
+- Fixed `core-js` peer dependency conflict
+  - Updated library peerDependency to accept both core-js v2 and v3: `"^2.5.4 || ^3.0.0"`
+  - Allows users to use modern `core-js@3.x` without npm resolution errors
+
+**Dependency Updates**
+- Updated root project to use `core-js@^3.47.0`
+- Updated Angular packages to latest patch versions (20.3.14 → 20.3.15)
+- Updated `@angular/build` and `@angular/cli` to 20.3.13
+- Updated `ts-jest` to 29.4.6
+
+**Breaking Changes**: None ✅
+
+---
+
 ## 0.20.0
 
 ### Angular 20 Upgrade
