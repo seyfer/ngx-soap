@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { createClient } from './soap/soap';
 import { HttpClient } from '@angular/common/http';
-import { Client } from './soap/interfaces';
+import { Client, IOptions } from './soap/interfaces';
 
 export {
   Client,
   WSDL,
+  IOptions,
+  IWsdlBaseOptions,
   ISoapMethod,
   ISoapMethodResponse,
   BasicAuthSecurity,
@@ -83,7 +85,7 @@ export class NgxSoapService {
    * });
    * ```
    */
-  createClient(wsdlUrl: string, options: any = {}, endpoint?: string): Promise<Client> {
+  createClient(wsdlUrl: string, options: IOptions = {}, endpoint?: string): Promise<Client> {
     options.httpClient = this.http;
     return createClient(wsdlUrl, options, endpoint);
   }
