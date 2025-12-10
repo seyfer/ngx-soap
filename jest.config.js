@@ -6,6 +6,14 @@ module.exports = {
     '<rootDir>/dist/',
     '<rootDir>/e2e/'
   ],
+  modulePathIgnorePatterns: [
+    '<rootDir>/projects/ngx-soap/node_modules/'
+  ],
+  haste: {
+    // Avoid naming collision between root and library package.json
+    forceNodeFilesystemAPI: true,
+    throwOnModuleCollision: false,
+  },
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
     'src/**/*.ts',
