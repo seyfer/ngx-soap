@@ -1,6 +1,6 @@
 {
   "name": "ngx-soap-next",
-  "version": "0.20.2",
+  "version": "0.20.3",
   "description": "SOAP service for Angular",
   "homepage": "https://github.com/seyfer/ngx-soap",
   "author": "Luca Lulani, marcward, Oleg Abrazhaev",
@@ -30,7 +30,7 @@
     "core-js": "^2.5.4 || ^3.0.0",
     "crypto-js": "^4.2.0",
     "debug": "^4.4.3",
-    "eslint": "^8.52.0",
+    "eslint": "^8.52.0 || ^9.0.0",
     "events": "^3.0.0",
     "httpntlm": "^1.7.6",
     "lodash": "^4.17.21",
